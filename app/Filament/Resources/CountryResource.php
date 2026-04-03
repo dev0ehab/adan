@@ -6,6 +6,7 @@ use App\Filament\Resources\CountryResource\Pages;
 use App\Models\Country;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -36,7 +37,22 @@ class CountryResource extends Resource
                 ->maxLength(5)
                 ->label('ISO Code')
                 ->helperText('e.g. EG for Egypt, US for United States')
-                ->uppercase(),
+                ->validationAttribute('ISO code')
+                ->extraInputAttributes(['class' => 'uppercase'])
+                ->afterStateUpdated(function (Set $set, $state): void {
+                    if (! is_string($state) || $state === '') {
+                        return;
+                    }
+                    $normalized = strtoupper(trim($state));
+                    if ($normalized !== $state) {
+                        $set('code', $normalized);
+                    }
+                })
+                ->dehydrateStateUsing(fn (?string $state): ?string => $state === null || $state === '' ? $state : strtoupper(trim($state)))
+                ->unique(Country::class, 'code', ignoreRecord: true)
+                ->validationMessages([
+                    'unique' => 'This ISO code is already in use.',
+                ]),
         ]);
     }
 
