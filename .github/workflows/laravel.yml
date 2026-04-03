@@ -1,0 +1,23 @@
+
+name: live
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  laravel-tests:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Deploy On Server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        username: "u738779583"
+        password: "Pa$$w0rd!user"
+        host: "46.202.172.76"
+        port: "65002"
+        script: 'cd domains/lightgray-marten-830794.hostingersite.com/public_html &&  ./deploy.sh'
