@@ -24,12 +24,13 @@ class AuthController extends Controller
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'password' => Hash::make($validated['password']),
-            'role' => 'customer',
-            'region_id' => $validated['region_id'] ?? null,
+            'name'              => $validated['name'],
+            'email'             => $validated['email'],
+            'phone'             => $validated['phone'] ?? null,
+            'password'          => Hash::make($validated['password']),
+            'role'              => 'customer',
+            'region_id'         => $validated['region_id'] ?? null,
+            'email_verified_at' => now(),
         ]);
 
         event(new Registered($user));
