@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Vaccine extends Model
 {
     protected $fillable = [
-        'animal_id', 'name', 'doses_count', 'interval_days', 'is_lifetime',
+        'animal_category_id', 'name', 'doses_count', 'interval_days', 'is_lifetime',
     ];
 
     protected function casts(): array
@@ -21,9 +21,9 @@ class Vaccine extends Model
         ];
     }
 
-    public function animal(): BelongsTo
+    public function animalCategory(): BelongsTo
     {
-        return $this->belongsTo(Animal::class);
+        return $this->belongsTo(AnimalCategory::class);
     }
 
     public function schedules(): HasMany

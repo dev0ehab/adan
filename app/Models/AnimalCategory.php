@@ -13,4 +13,9 @@ class AnimalCategory extends Model
     {
         return $this->hasMany(Animal::class, 'category_id');
     }
+
+    public function vaccines(): HasMany
+    {
+        return $this->hasMany(Vaccine::class);
+    }
 }

@@ -10,10 +10,11 @@ class VaccineScheduleService
 {
     /**
      * Generate vaccine schedules for a newly registered UserAnimal.
+     * Vaccines are now linked via the animal's category.
      */
     public function generateForUserAnimal(UserAnimal $userAnimal): void
     {
-        $vaccines = $userAnimal->animal->vaccines;
+        $vaccines = $userAnimal->animal->category->vaccines;
 
         foreach ($vaccines as $vaccine) {
             if ($vaccine->is_lifetime) {
@@ -111,7 +112,7 @@ class VaccineScheduleService
     public function generateForAll(): int
     {
         $count = 0;
-        UserAnimal::with('animal.vaccines')->chunk(100, function ($userAnimals) use (&$count) {
+        UserAnimal::with('animal.category.vaccines')->chunk(100, function ($userAnimals) use (&$count) {
             foreach ($userAnimals as $userAnimal) {
                 $this->generateForUserAnimal($userAnimal);
                 $count++;

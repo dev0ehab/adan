@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Animal extends Model
 {
@@ -15,9 +16,16 @@ class Animal extends Model
         return $this->belongsTo(AnimalCategory::class, 'category_id');
     }
 
-    public function vaccines(): HasMany
+    public function vaccines(): HasManyThrough
     {
-        return $this->hasMany(Vaccine::class);
+        return $this->hasManyThrough(
+            Vaccine::class,
+            AnimalCategory::class,
+            'id',
+            'animal_category_id',
+            'category_id',
+            'id'
+        );
     }
 
     public function userAnimals(): HasMany

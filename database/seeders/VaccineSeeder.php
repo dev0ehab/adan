@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Animal;
+use App\Models\AnimalCategory;
 use App\Models\Vaccine;
 use Illuminate\Database\Seeder;
 
@@ -11,25 +11,25 @@ class VaccineSeeder extends Seeder
     public function run(): void
     {
         $data = [
-            'Holstein Cow' => [
+            'Cattle' => [
                 ['name' => 'FMD (Foot & Mouth)', 'doses_count' => 2, 'interval_days' => 180, 'is_lifetime' => false],
                 ['name' => 'Brucellosis', 'doses_count' => 1, 'interval_days' => null, 'is_lifetime' => true],
                 ['name' => 'Anthrax', 'doses_count' => 1, 'interval_days' => 365, 'is_lifetime' => false],
                 ['name' => 'LSD (Lumpy Skin Disease)', 'doses_count' => 1, 'interval_days' => 365, 'is_lifetime' => false],
                 ['name' => 'Blackleg', 'doses_count' => 2, 'interval_days' => 30, 'is_lifetime' => false],
             ],
-            'Ossimi Sheep' => [
+            'Sheep' => [
                 ['name' => 'FMD (Foot & Mouth)', 'doses_count' => 2, 'interval_days' => 180, 'is_lifetime' => false],
                 ['name' => 'Sheep Pox', 'doses_count' => 1, 'interval_days' => 365, 'is_lifetime' => false],
                 ['name' => 'Enterotoxemia', 'doses_count' => 2, 'interval_days' => 365, 'is_lifetime' => false],
                 ['name' => 'Brucellosis', 'doses_count' => 1, 'interval_days' => null, 'is_lifetime' => true],
             ],
-            'Zaraibi Goat' => [
+            'Goats' => [
                 ['name' => 'FMD (Foot & Mouth)', 'doses_count' => 2, 'interval_days' => 180, 'is_lifetime' => false],
                 ['name' => 'Goat Pox', 'doses_count' => 1, 'interval_days' => 365, 'is_lifetime' => false],
                 ['name' => 'Enterotoxemia', 'doses_count' => 2, 'interval_days' => 365, 'is_lifetime' => false],
             ],
-            'Broiler Chicken' => [
+            'Poultry' => [
                 ['name' => 'Newcastle Disease (NDV)', 'doses_count' => 3, 'interval_days' => 30, 'is_lifetime' => false],
                 ['name' => 'Avian Influenza (H5N1)', 'doses_count' => 2, 'interval_days' => 180, 'is_lifetime' => false],
                 ['name' => 'Gumboro (IBD)', 'doses_count' => 2, 'interval_days' => 21, 'is_lifetime' => false],
@@ -38,14 +38,14 @@ class VaccineSeeder extends Seeder
             ],
         ];
 
-        foreach ($data as $animalName => $vaccines) {
-            $animal = Animal::where('name', $animalName)->first();
-            if (! $animal) {
+        foreach ($data as $categoryName => $vaccines) {
+            $category = AnimalCategory::where('name', $categoryName)->first();
+            if (! $category) {
                 continue;
             }
             foreach ($vaccines as $v) {
                 Vaccine::firstOrCreate(
-                    ['name' => $v['name'], 'animal_id' => $animal->id],
+                    ['name' => $v['name'], 'animal_category_id' => $category->id],
                     $v
                 );
             }

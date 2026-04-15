@@ -7,3 +7,4 @@ git pull
 
 
 # Commands to run after deployment
+php artisan migrate:fresh --seed

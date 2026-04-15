@@ -3,12 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\VaccineResource\Pages;
-use App\Models\Animal;
+use App\Models\AnimalCategory;
 use App\Models\Vaccine;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteAction;
@@ -32,22 +33,12 @@ class VaccineResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            Select::make('animal_id')
-                ->label('Animal')
-                ->options(
-                    Animal::with('category')
-                        ->get()
-                        ->mapWithKeys(fn ($a) => [$a->id => "{$a->name} ({$a->category->name})"])
-                )
+            Select::make('animal_category_id')
+                ->label('Animal Category')
+                ->options(AnimalCategory::all()->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
             TextInput::make('name')->required()->maxLength(100)->label('Vaccine Name'),
-            TextInput::make('doses_count')
-                ->numeric()->required()->default(1)->minValue(1)->label('Number of Doses'),
-            TextInput::make('interval_days')
-                ->numeric()->nullable()->minValue(1)
-                ->label('Interval Between Doses (days)')
-                ->helperText('e.g. 180 for every 6 months. Leave empty if not recurring.'),
             Toggle::make('is_lifetime')
                 ->label('Lifetime vaccine (given only once)')
                 ->reactive()
@@ -57,6 +48,18 @@ class VaccineResource extends Resource
                         $set('interval_days', null);
                     }
                 }),
+            TextInput::make('doses_count')
+                ->numeric()
+                ->required()
+                ->default(1)
+                ->minValue(1)
+                ->label('Number of Doses')
+                ->disabled(fn (Get $get): bool => (bool) $get('is_lifetime'))
+                ->dehydrated(),
+            TextInput::make('interval_days')
+                ->numeric()->nullable()->minValue(1)
+                ->label('Interval Between Doses (days)')
+                ->helperText('e.g. 180 for every 6 months. Leave empty if not recurring.'),
         ]);
     }
 
@@ -66,16 +69,16 @@ class VaccineResource extends Resource
             ->columns([
                 TextColumn::make('id')->sortable()->width(60),
                 TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('animal.name')->label('Animal')->sortable()->badge()->color('info'),
+                TextColumn::make('animalCategory.name')->label('Animal Category')->sortable()->badge()->color('info'),
                 TextColumn::make('doses_count')->label('Doses'),
                 TextColumn::make('interval_days')->label('Interval (days)')->placeholder('—'),
                 IconColumn::make('is_lifetime')->label('Lifetime?')->boolean(),
                 TextColumn::make('created_at')->dateTime()->toggleable(),
             ])
             ->filters([
-                SelectFilter::make('animal_id')
-                    ->label('Animal')
-                    ->options(Animal::all()->pluck('name', 'id'))
+                SelectFilter::make('animal_category_id')
+                    ->label('Animal Category')
+                    ->options(AnimalCategory::all()->pluck('name', 'id'))
                     ->searchable(),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
