@@ -61,13 +61,10 @@ class DiseaseReportController extends Controller
 
         $request->user()->notify(new DiseaseReportSubmittedNotification($report));
 
-        $push = app(PushNotificationService::class);
-        if ($push->isConfigured()) {
-            $push->toUsersWithRole('doctor', __('api.fcm_new_report_title'), __('api.fcm_new_report_body', ['title' => $report->title]), [
-                'type' => 'new_report',
-                'report_id' => (string) $report->id,
-            ]);
-        }
+        app(PushNotificationService::class)->toUsersWithRole('doctor', __('api.fcm_new_report_title'), __('api.fcm_new_report_body', ['title' => $report->title]), [
+            'type' => 'new_report',
+            'report_id' => (string) $report->id,
+        ]);
 
         $report->load('category', 'region.city.governorate', 'media');
 

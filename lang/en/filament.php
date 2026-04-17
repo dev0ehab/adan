@@ -223,9 +223,9 @@ return [
         'notify_not_configured_title' => 'Cannot send',
         'notify_not_configured_body' => 'Firebase Admin (FIREBASE_CREDENTIALS) is missing or invalid.',
         'notify_no_recipients_title' => 'No recipients',
-        'notify_no_recipients_body' => 'No matching users have a device token, or the selected user has no token.',
+        'notify_no_recipients_body' => 'No matching users were found, or the selected user does not exist.',
         'notify_sent_title' => 'Notification sent',
-        'notify_sent_body' => 'Delivery was requested for :count device(s). Invalid tokens are dropped by FCM automatically.',
+        'notify_sent_body' => 'Saved for :count user(s) in the app inbox; push was sent where a device token exists and FCM is configured.',
         'notify_error_title' => 'Something went wrong',
     ],
 ];

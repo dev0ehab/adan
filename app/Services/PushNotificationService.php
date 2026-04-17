@@ -3,9 +3,10 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Notifications\PushMessageNotification;
 
 /**
- * High-level FCM entry point: send data + notification payloads to stored device tokens.
+ * High-level FCM + in-app (database) notifications.
  */
 class PushNotificationService
 {
@@ -21,7 +22,7 @@ class PushNotificationService
      */
     public function toUser(User $user, string $title, string $body, array $data = []): void
     {
-        $this->fcm->sendToUser($user, $title, $body, $data);
+        $this->sendToUserWithStore($user, $title, $body, $data);
     }
 
     /**
@@ -30,13 +31,9 @@ class PushNotificationService
      */
     public function toUsers(iterable $users, string $title, string $body, array $data = []): void
     {
-        if (! $this->fcm->isConfigured()) {
-            return;
-        }
-
         foreach ($users as $user) {
             if ($user instanceof User) {
-                $this->fcm->sendToUser($user, $title, $body, $data);
+                $this->sendToUserWithStore($user, $title, $body, $data);
             }
         }
     }
@@ -46,31 +43,23 @@ class PushNotificationService
      */
     public function toUsersWithRole(string $role, string $title, string $body, array $data = []): void
     {
-        if (! $this->fcm->isConfigured()) {
-            return;
-        }
-
-        foreach (User::query()->where('role', $role)->whereNotNull('fcm_token')->cursor() as $user) {
+        foreach (User::query()->where('role', $role)->cursor() as $user) {
             if (! $user instanceof User) {
                 continue;
             }
 
-            $this->fcm->sendToUser($user, $title, $body, $data);
+            $this->sendToUserWithStore($user, $title, $body, $data);
         }
     }
 
     /**
      * Send the same notification from the admin panel to a chosen audience.
      *
-     * @param  array<string, mixed>  $data  Extra FCM data payload (merged with type)
-     * @return int Number of send attempts (users with a stored FCM token)
+     * @param  array<string, mixed>  $data  Extra payload (merged with type for FCM + DB)
+     * @return int Number of users notified (database); FCM only reaches users with a token when configured
      */
     public function broadcast(string $title, string $body, string $audience, ?int $userId = null, array $data = []): int
     {
-        if (! $this->fcm->isConfigured()) {
-            return 0;
-        }
-
         $payload = array_merge(['type' => 'admin_broadcast'], $data);
 
         if ($audience === 'user') {
@@ -83,16 +72,12 @@ class PushNotificationService
                 return 0;
             }
 
-            if (! is_string($user->fcm_token) || $user->fcm_token === '') {
-                return 0;
-            }
-
-            $this->fcm->sendToUser($user, $title, $body, $payload);
+            $this->sendToUserWithStore($user, $title, $body, $payload);
 
             return 1;
         }
 
-        $query = User::query()->whereNotNull('fcm_token');
+        $query = User::query();
 
         if ($audience === 'doctors') {
             $query->where('role', 'doctor');
@@ -108,10 +93,22 @@ class PushNotificationService
                 continue;
             }
 
-            $this->fcm->sendToUser($user, $title, $body, $payload);
+            $this->sendToUserWithStore($user, $title, $body, $payload);
             $n++;
         }
 
         return $n;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function sendToUserWithStore(User $user, string $title, string $body, array $data = []): void
+    {
+        $user->notify(new PushMessageNotification($title, $body, $data));
+
+        if ($this->fcm->isConfigured()) {
+            $this->fcm->sendToUser($user, $title, $body, $data);
+        }
     }
 }

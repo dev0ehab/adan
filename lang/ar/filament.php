@@ -223,9 +223,9 @@ return [
         'notify_not_configured_title' => 'لا يمكن الإرسال',
         'notify_not_configured_body' => 'Firebase Admin (FIREBASE_CREDENTIALS) غير موجود أو غير صالح.',
         'notify_no_recipients_title' => 'لا يوجد مستلمون',
-        'notify_no_recipients_body' => 'لا يوجد مستخدمون مطابقون لديهم توكن جهاز، أو المستخدم المختار بلا توكن.',
+        'notify_no_recipients_body' => 'لا يوجد مستخدمون مطابقون، أو المستخدم المختار غير موجود.',
         'notify_sent_title' => 'تم طلب الإرسال',
-        'notify_sent_body' => 'تم طلب التوصيل لـ :count جهازاً. FCM يتجاهل التوكنات غير الصالحة تلقائياً.',
+        'notify_sent_body' => 'تم الحفظ في صندوق الإشعارات لـ :count مستخدم؛ وتم إرسال الدفع حيث يوجد توكن وFCM مهيأ.',
         'notify_error_title' => 'حدث خطأ',
     ],
 ];
