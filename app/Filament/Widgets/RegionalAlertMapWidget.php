@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 
 class RegionalAlertMapWidget extends Widget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 4;
 
     protected static string $view = 'filament.widgets.regional-alert-map-widget';
 

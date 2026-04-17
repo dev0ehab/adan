@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DiseaseReport;
 use App\Notifications\DiseaseReportSubmittedNotification;
+use App\Services\PushNotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,7 @@ class DiseaseReportController extends Controller
     {
         $reports = DiseaseReport::where('user_id', $request->user()->id)
             ->with([
-                'animal.category',
+                'category',
                 'region.city.governorate',
                 'media',
             ])
@@ -28,7 +29,7 @@ class DiseaseReportController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'animal_id' => 'required|exists:animals,id',
+            'category_id' => 'required|exists:animal_categories,id',
             'region_id' => 'required|exists:regions,id',
             'title' => 'required|string|max:255',
             'description' => 'required|string|min:20',
@@ -41,7 +42,7 @@ class DiseaseReportController extends Controller
 
         $report = DiseaseReport::create([
             'user_id' => $request->user()->id,
-            'animal_id' => $validated['animal_id'],
+            'category_id' => $validated['category_id'],
             'region_id' => $validated['region_id'],
             'title' => $validated['title'],
             'description' => $validated['description'],
@@ -60,10 +61,18 @@ class DiseaseReportController extends Controller
 
         $request->user()->notify(new DiseaseReportSubmittedNotification($report));
 
-        $report->load('animal.category', 'region.city.governorate', 'media');
+        $push = app(PushNotificationService::class);
+        if ($push->isConfigured()) {
+            $push->toUsersWithRole('doctor', __('api.fcm_new_report_title'), __('api.fcm_new_report_body', ['title' => $report->title]), [
+                'type' => 'new_report',
+                'report_id' => (string) $report->id,
+            ]);
+        }
+
+        $report->load('category', 'region.city.governorate', 'media');
 
         return response()->json([
-            'message' => 'Your report has been submitted and is under review by our veterinary team.',
+            'message' => __('api.report_submitted'),
             'data' => $this->formatReport($report),
         ], 201);
     }
@@ -71,11 +80,11 @@ class DiseaseReportController extends Controller
     public function show(Request $request, DiseaseReport $report): JsonResponse
     {
         if ($report->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
+            return response()->json(['message' => __('api.report_unauthorized')], 403);
         }
 
         $report->load([
-            'animal.category',
+            'category',
             'region.city.governorate',
             'reporter',
             'reviewer',
@@ -89,7 +98,7 @@ class DiseaseReportController extends Controller
     {
         $reports = DiseaseReport::approved()
             ->with([
-                'animal.category',
+                'category',
                 'region.city.governorate',
             ])
             ->latest('reviewed_at')
@@ -101,8 +110,8 @@ class DiseaseReportController extends Controller
                     'severity' => $r->severity,
                     'latitude' => $r->latitude,
                     'longitude' => $r->longitude,
-                    'animal' => $r->animal->name,
-                    'category' => $r->animal->category->name,
+                    'animal' => $r->category->name,
+                    'category' => $r->category->name,
                     'region' => $r->region?->name,
                     'city' => $r->region?->city?->name,
                     'governorate' => $r->region?->city?->governorate?->name,
@@ -127,10 +136,9 @@ class DiseaseReportController extends Controller
             'longitude' => $report->longitude,
             'reviewed_at' => $report->reviewed_at,
             'created_at' => $report->created_at,
-            'animal' => $report->animal ? [
-                'id' => $report->animal->id,
-                'name' => $report->animal->name,
-                'category' => $report->animal->category?->name,
+            'category' => $report->category ? [
+                'id' => $report->category->id,
+                'name' => $report->category->name,
             ] : null,
             'region' => $report->region ? [
                 'id' => $report->region->id,

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\CountryResource\Pages;
 use App\Models\Country;
 use Filament\Forms\Components\TextInput;
@@ -21,23 +22,38 @@ class CountryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';
 
-    protected static ?string $navigationGroup = 'Locations';
-
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_locations');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.country.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.country.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.country.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')
-                ->required()
-                ->maxLength(100)
-                ->label('Country Name'),
+            ...TranslatableFields::nameSection(100),
             TextInput::make('code')
                 ->required()
                 ->maxLength(5)
-                ->label('ISO Code')
-                ->helperText('e.g. EG for Egypt, US for United States')
-                ->validationAttribute('ISO code')
+                ->label(__('filament.labels.iso_code'))
+                ->helperText(__('filament.labels.iso_helper'))
+                ->validationAttribute(__('filament.labels.iso_code'))
                 ->extraInputAttributes(['class' => 'uppercase'])
                 ->afterStateUpdated(function (Set $set, $state): void {
                     if (! is_string($state) || $state === '') {
@@ -51,7 +67,7 @@ class CountryResource extends Resource
                 ->dehydrateStateUsing(fn (?string $state): ?string => $state === null || $state === '' ? $state : strtoupper(trim($state)))
                 ->unique(Country::class, 'code', ignoreRecord: true)
                 ->validationMessages([
-                    'unique' => 'This ISO code is already in use.',
+                    'unique' => __('filament.labels.iso_unique'),
                 ]),
         ]);
     }
@@ -60,14 +76,14 @@ class CountryResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable()->width(60),
-                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('id')->sortable()->width(60)->label(__('filament.labels.id')),
+                TextColumn::make('name')->searchable()->sortable()->label(__('filament.labels.country_name')),
                 TextColumn::make('code')->badge()->color('success'),
                 TextColumn::make('governorates_count')
                     ->counts('governorates')
-                    ->label('Governorates')
+                    ->label(__('filament.labels.governorates_count'))
                     ->sortable(),
-                TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
+                TextColumn::make('created_at')->dateTime()->sortable()->toggleable()->label(__('filament.labels.created_at')),
             ])
             ->actions([
                 EditAction::make(),

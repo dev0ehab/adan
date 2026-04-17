@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Route;
 
 Route::get('health', fn () => response()->json([
-    'status' => 'ok',
+    'status' => __('api.health_ok'),
     'app' => config('app.name'),
     'version' => '1.0.0',
     'time' => now()->toIso8601String(),
@@ -25,6 +25,7 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', [AuthController::class, 'logout']);
+        Route::post('fcm-token', [AuthController::class, 'updateFcmToken']);
         Route::get('me', [AuthController::class, 'me']);
     });
 });
@@ -32,7 +33,7 @@ Route::prefix('auth')->group(function () {
 Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
     $request->fulfill();
 
-    return response()->json(['message' => 'Email verified successfully.']);
+    return response()->json(['message' => __('api.email_verified')]);
 })->middleware(['auth:sanctum', 'signed'])->name('verification.verify');
 
 Route::prefix('locations')->group(function () {

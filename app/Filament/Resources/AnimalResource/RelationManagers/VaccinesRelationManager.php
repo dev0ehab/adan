@@ -2,9 +2,13 @@
 
 namespace App\Filament\Resources\AnimalResource\RelationManagers;
 
+use App\Filament\Forms\TranslatableFields;
+use App\Support\TranslatableFormData;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Actions\CreateAction;
 use Filament\Tables\Actions\DeleteAction;
@@ -12,34 +16,46 @@ use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class VaccinesRelationManager extends RelationManager
 {
     protected static string $relationship = 'vaccines';
 
-    protected static ?string $title = 'Vaccines for this Animal';
+    public static function getTitle(Model $ownerRecord, string $pageClass): string
+    {
+        return __('filament.relation_manager.vaccines_title');
+    }
 
     public function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->maxLength(100)->label('Vaccine Name')->columnSpanFull(),
-            TextInput::make('doses_count')
-                ->numeric()->required()->default(1)->minValue(1)
-                ->label('Number of Doses'),
-            TextInput::make('interval_days')
-                ->numeric()->nullable()->minValue(1)
-                ->label('Interval (days)')
-                ->helperText('Days between doses or annual repeat. Leave empty if one-time only.'),
+            Section::make(TranslatableFields::bilingualSectionHeading())
+                ->description(__('filament.form.bilingual_section_hint'))
+                ->schema([TranslatableFields::nameGrid(100)])
+                ->columnSpanFull()
+                ->extraAttributes(['dir' => 'ltr']),
             Toggle::make('is_lifetime')
-                ->label('Given once in lifetime?')
-                ->helperText('Enable if this vaccine is administered only once in the animal\'s life.')
-                ->reactive()
+                ->label(__('filament.relation_manager.lifetime_toggle'))
+                ->helperText(__('filament.relation_manager.lifetime_helper'))
+                ->live()
                 ->afterStateUpdated(function ($state, callable $set) {
                     if ($state) {
                         $set('doses_count', 1);
                         $set('interval_days', null);
                     }
                 }),
+            TextInput::make('doses_count')
+                ->numeric()->required()->default(1)->minValue(1)
+                ->label(__('filament.labels.number_of_doses'))
+                ->disabled(fn (Get $get): bool => (bool) $get('is_lifetime'))
+                ->dehydrated(),
+            TextInput::make('interval_days')
+                ->numeric()->nullable()->minValue(1)
+                ->label(__('filament.labels.interval_days'))
+                ->helperText(__('filament.relation_manager.interval_helper'))
+                ->hidden(fn (Get $get): bool => (bool) $get('is_lifetime'))
+                ->dehydrated(fn (Get $get): bool => ! (bool) $get('is_lifetime')),
         ]);
     }
 
@@ -48,11 +64,24 @@ class VaccinesRelationManager extends RelationManager
         return $table
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('doses_count')->label('Doses')->sortable(),
-                TextColumn::make('interval_days')->label('Interval (days)')->placeholder('—'),
-                IconColumn::make('is_lifetime')->label('Lifetime?')->boolean(),
+                TextColumn::make('doses_count')->label(__('filament.labels.doses'))->sortable(),
+                TextColumn::make('interval_days')->label(__('filament.labels.interval_days'))->placeholder('—'),
+                IconColumn::make('is_lifetime')->label(__('filament.labels.lifetime'))->boolean(),
             ])
-            ->headerActions([CreateAction::make()])
-            ->actions([EditAction::make(), DeleteAction::make()]);
+            ->headerActions([
+                CreateAction::make()
+                    ->mutateFormDataUsing(fn (array $data): array => TranslatableFormData::collapse($data, ['name'])),
+            ])
+            ->actions([
+                EditAction::make()
+                    ->fillForm(function (Model $record, Table $table): array {
+                        $data = $record->attributesToArray();
+                        unset($data['name']);
+
+                        return array_merge($data, TranslatableFormData::expandForRecord($record, ['name']));
+                    })
+                    ->mutateFormDataUsing(fn (array $data): array => TranslatableFormData::collapse($data, ['name'])),
+                DeleteAction::make(),
+            ]);
     }
 }

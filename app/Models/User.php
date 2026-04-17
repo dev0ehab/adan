@@ -15,19 +15,19 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements MustVerifyEmail, FilamentUser, HasMedia
+class User extends Authenticatable implements FilamentUser, HasMedia, MustVerifyEmail
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, InteractsWithMedia;
+    use HasApiTokens, HasFactory, HasRoles, InteractsWithMedia, Notifiable;
 
     protected $fillable = [
         'name', 'email', 'phone', 'password',
         'role', 'otp', 'otp_expires_at',
         'region_id', 'latitude', 'longitude',
-        'email_verified_at',
+        'email_verified_at', 'fcm_token',
     ];
 
     protected $hidden = [
-        'password', 'remember_token', 'otp',
+        'password', 'remember_token', 'otp', 'fcm_token',
     ];
 
     protected function casts(): array

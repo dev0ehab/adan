@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\RegionResource\Pages;
 use App\Models\City;
 use App\Models\Region;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -22,15 +22,33 @@ class RegionResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-map';
 
-    protected static ?string $navigationGroup = 'Locations';
-
     protected static ?int $navigationSort = 4;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_locations');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.region.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.region.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.region.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Select::make('city_id')
-                ->label('City')
+                ->label(__('filament.labels.city'))
                 ->options(
                     City::with('governorate')
                         ->get()
@@ -38,7 +56,7 @@ class RegionResource extends Resource
                 )
                 ->searchable()
                 ->required(),
-            TextInput::make('name')->required()->maxLength(100)->label('Region Name'),
+            ...TranslatableFields::nameSection(100),
         ]);
     }
 
@@ -46,11 +64,12 @@ class RegionResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable()->width(60),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('city.name')->label('City')->sortable(),
-                TextColumn::make('city.governorate.name')->label('Governorate')->sortable(),
-                TextColumn::make('users_count')->counts('users')->label('Users'),
+                TextColumn::make('id')->sortable()->width(60)->label(__('filament.labels.id')),
+                TextColumn::make('name')->searchable()->sortable()->label(__('filament.labels.region_name')),
+                TextColumn::make('city.name')->label(__('filament.labels.city'))->sortable(),
+                TextColumn::make('city.governorate.name')->label(__('filament.labels.governorate'))->sortable(),
+                TextColumn::make('users_count')->counts('users')->label(__('filament.labels.users_count'))->sortable(),
+                TextColumn::make('created_at')->dateTime()->toggleable()->label(__('filament.labels.created_at')),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
             ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])])

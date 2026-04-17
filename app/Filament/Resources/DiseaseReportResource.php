@@ -25,6 +25,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class DiseaseReportResource extends Resource
 {
@@ -32,11 +33,32 @@ class DiseaseReportResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-document-magnifying-glass';
 
-    protected static ?string $navigationLabel = 'Disease Reports';
-
-    protected static ?string $navigationGroup = 'Reports';
-
     protected static ?string $navigationBadge = null;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_reports');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.disease_report.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.disease_report.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.disease_report.plural');
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['reporter', 'category', 'region']);
+    }
 
     public static function getNavigationBadge(): ?string
     {
@@ -52,11 +74,12 @@ class DiseaseReportResource extends Resource
     {
         return $infolist
             ->schema([
-                Section::make('Report')
+                Section::make(__('filament.disease_report.section_report'))
                     ->schema([
                         TextEntry::make('title'),
                         TextEntry::make('description')->columnSpanFull(),
                         TextEntry::make('severity')
+                            ->formatStateUsing(fn (?string $state): string => $state ? __("filament.severity.{$state}") : '')
                             ->badge()
                             ->color(fn (string $state) => match ($state) {
                                 'low' => 'success',
@@ -65,6 +88,7 @@ class DiseaseReportResource extends Resource
                                 default => 'gray',
                             }),
                         TextEntry::make('status')
+                            ->formatStateUsing(fn (?string $state): string => $state ? __("filament.report_status.{$state}") : '')
                             ->badge()
                             ->color(fn (string $state) => match ($state) {
                                 'pending' => 'warning',
@@ -73,29 +97,29 @@ class DiseaseReportResource extends Resource
                                 default => 'gray',
                             }),
                         TextEntry::make('rejection_reason')
-                            ->label('Rejection reason')
+                            ->label(__('filament.labels.rejection_reason'))
                             ->placeholder('—')
                             ->columnSpanFull()
                             ->visible(fn (DiseaseReport $record) => $record->isRejected()),
                         TextEntry::make('latitude')
-                            ->label('Latitude')
+                            ->label(__('filament.labels.latitude'))
                             ->placeholder('—'),
                         TextEntry::make('longitude')
-                            ->label('Longitude')
+                            ->label(__('filament.labels.longitude'))
                             ->placeholder('—'),
-                        TextEntry::make('created_at')->dateTime()->label('Submitted'),
-                        TextEntry::make('reviewed_at')->dateTime()->label('Reviewed')->placeholder('—'),
+                        TextEntry::make('created_at')->dateTime()->label(__('filament.labels.submitted')),
+                        TextEntry::make('reviewed_at')->dateTime()->label(__('filament.labels.reviewed'))->placeholder('—'),
                     ])
                     ->columns(2),
-                Section::make('Context')
+                Section::make(__('filament.disease_report.section_context'))
                     ->schema([
-                        TextEntry::make('reporter.name')->label('Reporter'),
-                        TextEntry::make('reporter.email')->label('Reporter email'),
-                        TextEntry::make('animal.name')->label('Animal'),
-                        TextEntry::make('region.name')->label('Region')->placeholder('—'),
+                        TextEntry::make('reporter.name')->label(__('filament.labels.reporter')),
+                        TextEntry::make('reporter.email')->label(__('filament.labels.reporter_email')),
+                        TextEntry::make('category.name')->label(__('filament.labels.animal_category')),
+                        TextEntry::make('region.name')->label(__('filament.labels.region'))->placeholder('—'),
                     ])
                     ->columns(2),
-                Section::make('Submitted images')
+                Section::make(__('filament.disease_report.section_images'))
                     ->schema([
                         ImageEntry::make('images')
                             ->label('')
@@ -114,38 +138,61 @@ class DiseaseReportResource extends Resource
 
     public static function form(Form $form): Form
     {
+        $severityOptions = [
+            'low' => __('filament.severity.low'),
+            'moderate' => __('filament.severity.moderate'),
+            'high' => __('filament.severity.high'),
+        ];
+        $statusOptions = [
+            'pending' => __('filament.report_status.pending'),
+            'approved' => __('filament.report_status.approved'),
+            'rejected' => __('filament.report_status.rejected'),
+        ];
+
         return $form->schema([
             TextInput::make('title')->disabled()->columnSpanFull(),
             Textarea::make('description')->disabled()->rows(4)->columnSpanFull(),
-            TextInput::make('reporter.name')->disabled()->label('Submitted By'),
-            TextInput::make('animal.name')->disabled()->label('Animal'),
-            TextInput::make('region.name')->disabled()->label('Region'),
+            TextInput::make('reporter.name')->disabled()->label(__('filament.labels.submitted_by')),
+            TextInput::make('category.name')->disabled()->label(__('filament.labels.animal_category')),
+            TextInput::make('region.name')->disabled()->label(__('filament.labels.region')),
             Select::make('severity')
-                ->options(['low' => 'Low', 'moderate' => 'Moderate', 'high' => 'High'])
+                ->options($severityOptions)
                 ->disabled(),
             Select::make('status')
-                ->options(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected'])
+                ->options($statusOptions)
                 ->required()
                 ->live(),
             Textarea::make('rejection_reason')
                 ->nullable()
                 ->rows(3)
-                ->label('Rejection Reason')
-                ->helperText('Required when rejecting a report')
+                ->label(__('filament.labels.rejection_reason_label'))
+                ->helperText(__('filament.disease_report.helper_reject'))
                 ->visible(fn (Get $get) => $get('status') === 'rejected'),
         ]);
     }
 
     public static function table(Table $table): Table
     {
+        $severityOptions = [
+            'low' => __('filament.severity.low'),
+            'moderate' => __('filament.severity.moderate'),
+            'high' => __('filament.severity.high'),
+        ];
+        $statusOptions = [
+            'pending' => __('filament.report_status.pending'),
+            'approved' => __('filament.report_status.approved'),
+            'rejected' => __('filament.report_status.rejected'),
+        ];
+
         return $table
             ->columns([
-                TextColumn::make('id')->sortable()->width(60),
-                TextColumn::make('title')->searchable()->limit(40)->sortable(),
-                TextColumn::make('reporter.name')->label('Reporter')->searchable(),
-                TextColumn::make('animal.name')->label('Animal')->sortable(),
-                TextColumn::make('region.name')->label('Region')->sortable(),
+                TextColumn::make('id')->sortable()->width(60)->label(__('filament.labels.id')),
+                TextColumn::make('title')->searchable()->limit(40)->sortable()->label(__('filament.labels.title')),
+                TextColumn::make('reporter.name')->label(__('filament.labels.reporter'))->searchable(),
+                TextColumn::make('category.name')->label(__('filament.labels.animal_category'))->sortable(),
+                TextColumn::make('region.name')->label(__('filament.labels.region'))->sortable(),
                 TextColumn::make('severity')
+                    ->formatStateUsing(fn (?string $state): string => $state ? __("filament.severity.{$state}") : '')
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
                         'low' => 'success',
@@ -154,6 +201,7 @@ class DiseaseReportResource extends Resource
                         default => 'gray',
                     }),
                 TextColumn::make('status')
+                    ->formatStateUsing(fn (?string $state): string => $state ? __("filament.report_status.{$state}") : '')
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
                         'pending' => 'warning',
@@ -161,27 +209,25 @@ class DiseaseReportResource extends Resource
                         'rejected' => 'danger',
                         default => 'gray',
                     }),
-                TextColumn::make('created_at')->dateTime()->sortable()->label('Submitted'),
+                TextColumn::make('created_at')->dateTime()->sortable()->label(__('filament.labels.submitted')),
             ])
             ->filters([
-                SelectFilter::make('status')
-                    ->options(['pending' => 'Pending', 'approved' => 'Approved', 'rejected' => 'Rejected']),
-                SelectFilter::make('severity')
-                    ->options(['low' => 'Low', 'moderate' => 'Moderate', 'high' => 'High']),
+                SelectFilter::make('status')->options($statusOptions),
+                SelectFilter::make('severity')->options($severityOptions),
                 SelectFilter::make('region_id')
-                    ->label('Region')
+                    ->label(__('filament.labels.region'))
                     ->options(Region::all()->pluck('name', 'id'))
                     ->searchable(),
             ])
             ->actions([
                 ViewAction::make(),
                 Action::make('approve')
-                    ->label('Approve')
+                    ->label(__('filament.disease_report.action_approve'))
                     ->color('success')
                     ->icon('heroicon-o-check-circle')
                     ->requiresConfirmation()
-                    ->modalHeading('Approve Disease Report')
-                    ->modalDescription('This will approve the report and send disease alert notifications to all users in the affected region.')
+                    ->modalHeading(__('filament.disease_report.modal_approve_heading'))
+                    ->modalDescription(__('filament.disease_report.modal_approve_description'))
                     ->visible(fn (DiseaseReport $record) => $record->isPending())
                     ->action(function (DiseaseReport $record) {
                         $record->update([
@@ -191,21 +237,21 @@ class DiseaseReportResource extends Resource
                         ]);
                         $fresh = $record->fresh();
                         SendDiseaseAlertJob::dispatch($fresh);
-                        $regionLabel = $fresh->region?->name ?? 'the affected region';
+                        $regionLabel = $fresh->region?->name ?? __('filament.disease_report.affected_region_fallback');
                         Notification::make()
-                            ->title('Report Approved')
-                            ->body("Alerts have been dispatched to users in {$regionLabel}.")
+                            ->title(__('filament.disease_report.notification_approved_title'))
+                            ->body(__('filament.disease_report.notification_approved_body', ['region' => $regionLabel]))
                             ->success()
                             ->send();
                     }),
                 Action::make('reject')
-                    ->label('Reject')
+                    ->label(__('filament.disease_report.action_reject'))
                     ->color('danger')
                     ->icon('heroicon-o-x-circle')
                     ->visible(fn (DiseaseReport $record) => $record->isPending())
                     ->form([
                         Textarea::make('rejection_reason')
-                            ->label('Reason for rejection')
+                            ->label(__('filament.labels.reason_for_rejection'))
                             ->required()
                             ->rows(4),
                     ])
@@ -220,7 +266,7 @@ class DiseaseReportResource extends Resource
                             new ReportStatusNotification($record->fresh())
                         );
                         Notification::make()
-                            ->title('Report Rejected')
+                            ->title(__('filament.disease_report.notification_rejected_title'))
                             ->warning()
                             ->send();
                     }),

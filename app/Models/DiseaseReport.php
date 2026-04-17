@@ -13,7 +13,7 @@ class DiseaseReport extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $fillable = [
-        'user_id', 'animal_id', 'region_id',
+        'user_id', 'category_id', 'region_id',
         'title', 'description',
         'latitude', 'longitude',
         'severity', 'status',
@@ -57,9 +57,9 @@ class DiseaseReport extends Model implements HasMedia
         return $this->belongsTo(User::class, 'reviewed_by');
     }
 
-    public function animal(): BelongsTo
+    public function category(): BelongsTo
     {
-        return $this->belongsTo(Animal::class);
+        return $this->belongsTo(AnimalCategory::class, 'category_id');
     }
 
     public function region(): BelongsTo

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AnimalCategory;
+use Database\Seeders\Support\Bilingual;
 use Illuminate\Database\Seeder;
 
 class AnimalCategorySeeder extends Seeder
@@ -10,18 +11,69 @@ class AnimalCategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            ['name' => 'Cattle', 'description' => 'Cows, bulls, and buffalo used for dairy, meat, and labor'],
-            ['name' => 'Sheep', 'description' => 'Domestic sheep raised for meat, wool, and dairy'],
-            ['name' => 'Goats', 'description' => 'Domestic goats raised for meat, milk, and fiber'],
-            ['name' => 'Poultry', 'description' => 'Chickens, ducks, turkeys, and other domesticated birds'],
-            ['name' => 'Horses', 'description' => 'Horses and donkeys used for work and sport'],
-            ['name' => 'Camels', 'description' => 'Dromedary and Bactrian camels'],
-            ['name' => 'Rabbits', 'description' => 'Domestic rabbits raised for meat and fur'],
-            ['name' => 'Fish', 'description' => 'Farmed fish including tilapia and catfish'],
+            [
+                'name' => Bilingual::map('Cattle', 'أبقار وماشية'),
+                'description' => Bilingual::map(
+                    'Cows, bulls, and buffalo used for dairy, meat, and labor',
+                    'أبقار وثيران وجاموس تُربى للحليب واللحم والعمل.'
+                ),
+            ],
+            [
+                'name' => Bilingual::map('Sheep', 'أغنام'),
+                'description' => Bilingual::map(
+                    'Domestic sheep raised for meat, wool, and dairy',
+                    'أغنام مُربّاة للّحم والصوف والحليب.'
+                ),
+            ],
+            [
+                'name' => Bilingual::map('Goats', 'ماعز'),
+                'description' => Bilingual::map(
+                    'Domestic goats raised for meat, milk, and fiber',
+                    'ماعز مُربّاة للّحم والحليب والألياف.'
+                ),
+            ],
+            [
+                'name' => Bilingual::map('Poultry', 'دواجن'),
+                'description' => Bilingual::map(
+                    'Chickens, ducks, turkeys, and other domesticated birds',
+                    'دجاج وبط ورومي وطيور أخرى.'
+                ),
+            ],
+            [
+                'name' => Bilingual::map('Horses', 'خيول'),
+                'description' => Bilingual::map(
+                    'Horses and donkeys used for work and sport',
+                    'خيول وحمير للعمل والرياضة.'
+                ),
+            ],
+            [
+                'name' => Bilingual::map('Camels', 'إبل'),
+                'description' => Bilingual::map(
+                    'Dromedary and Bactrian camels',
+                    'إبل مجهودة ومزدوجة السنام.'
+                ),
+            ],
+            [
+                'name' => Bilingual::map('Rabbits', 'أرانب'),
+                'description' => Bilingual::map(
+                    'Domestic rabbits raised for meat and fur',
+                    'أرانب مُربّاة للّحم والفراء.'
+                ),
+            ],
+            [
+                'name' => Bilingual::map('Fish', 'أسماك'),
+                'description' => Bilingual::map(
+                    'Farmed fish including tilapia and catfish',
+                    'أسماك مُربّاة مثل البلطي والقرموط.'
+                ),
+            ],
         ];
 
         foreach ($categories as $cat) {
-            AnimalCategory::firstOrCreate(['name' => $cat['name']], $cat);
+            AnimalCategory::updateOrCreate(
+                ['name->en' => $cat['name']['en']],
+                $cat,
+            );
         }
     }
 }

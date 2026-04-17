@@ -24,25 +24,47 @@ class UserResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    protected static ?string $navigationGroup = 'Users';
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_users');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.user.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.user.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.user.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->maxLength(100),
-            TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
-            TextInput::make('phone')->nullable()->tel(),
+            TextInput::make('name')->required()->maxLength(100)->label(__('filament.labels.name')),
+            TextInput::make('email')->email()->required()->unique(ignoreRecord: true)->label(__('filament.labels.email')),
+            TextInput::make('phone')->nullable()->tel()->label(__('filament.labels.phone')),
             Select::make('role')
-                ->options(['customer' => 'Customer (Breeder)', 'doctor' => 'Doctor (Veterinarian)'])
+                ->label(__('filament.labels.role'))
+                ->options([
+                    'customer' => __('filament.user_roles.customer_breeder'),
+                    'doctor' => __('filament.user_roles.doctor_vet'),
+                ])
                 ->required()
                 ->default('customer'),
             TextInput::make('password')
                 ->password()
                 ->required(fn (string $operation): bool => $operation === 'create')
                 ->dehydrated(fn ($state) => filled($state))
-                ->label('Password (leave empty to keep current)'),
+                ->label(__('filament.labels.password')),
             Select::make('region_id')
-                ->label('Region')
+                ->label(__('filament.labels.region'))
                 ->options(
                     Region::with('city.governorate')
                         ->get()
@@ -59,29 +81,40 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable()->width(60),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('email')->searchable(),
-                TextColumn::make('phone')->placeholder('—')->toggleable(),
+                TextColumn::make('id')->sortable()->width(60)->label(__('filament.labels.id')),
+                TextColumn::make('name')->label(__('filament.labels.name'))->searchable()->sortable(),
+                TextColumn::make('email')->label(__('filament.labels.email'))->searchable(),
+                TextColumn::make('phone')->placeholder('—')->toggleable()->label(__('filament.labels.phone')),
+                TextColumn::make('region.name')->label(__('filament.labels.region'))->placeholder('—')->sortable(),
                 TextColumn::make('role')
+                    ->label(__('filament.labels.role'))
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'customer' => __('filament.user_roles.customer'),
+                        'doctor' => __('filament.user_roles.doctor'),
+                        default => (string) $state,
+                    })
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
                         'doctor' => 'success',
                         'customer' => 'info',
                         default => 'gray',
                     }),
-                TextColumn::make('region.name')->label('Region')->placeholder('—')->sortable(),
+                TextColumn::make('region.name')->label(__('filament.labels.region'))->placeholder('—')->sortable(),
                 IconColumn::make('email_verified_at')
-                    ->label('Verified')
+                    ->label(__('filament.labels.verified'))
                     ->boolean()
                     ->getStateUsing(fn ($record) => $record->email_verified_at !== null),
-                TextColumn::make('created_at')->dateTime()->sortable()->toggleable(),
+                TextColumn::make('created_at')->dateTime()->sortable()->toggleable()->label(__('filament.labels.created_at')),
             ])
             ->filters([
                 SelectFilter::make('role')
-                    ->options(['customer' => 'Customer', 'doctor' => 'Doctor']),
+                    ->label(__('filament.labels.role'))
+                    ->options([
+                        'customer' => __('filament.user_roles.customer'),
+                        'doctor' => __('filament.user_roles.doctor'),
+                    ]),
                 SelectFilter::make('region_id')
-                    ->label('Region')
+                    ->label(__('filament.labels.region'))
                     ->options(Region::all()->pluck('name', 'id'))
                     ->searchable(),
             ])

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Country;
+use Database\Seeders\Support\Bilingual;
 use Illuminate\Database\Seeder;
 
 class CountrySeeder extends Seeder
@@ -10,14 +11,17 @@ class CountrySeeder extends Seeder
     public function run(): void
     {
         $countries = [
-            ['name' => 'Egypt', 'code' => 'EG'],
-            ['name' => 'Saudi Arabia', 'code' => 'SA'],
-            ['name' => 'Jordan', 'code' => 'JO'],
-            ['name' => 'Sudan', 'code' => 'SD'],
+            ['code' => 'EG', 'name' => Bilingual::map('Egypt', 'مصر')],
+            ['code' => 'SA', 'name' => Bilingual::map('Saudi Arabia', 'المملكة العربية السعودية')],
+            ['code' => 'JO', 'name' => Bilingual::map('Jordan', 'الأردن')],
+            ['code' => 'SD', 'name' => Bilingual::map('Sudan', 'السودان')],
         ];
 
         foreach ($countries as $c) {
-            Country::firstOrCreate(['code' => $c['code']], $c);
+            Country::updateOrCreate(
+                ['code' => $c['code']],
+                ['name' => $c['name']],
+            );
         }
     }
 }

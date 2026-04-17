@@ -21,22 +21,24 @@ class AuthController extends Controller
             'phone' => 'nullable|string|max:20',
             'password' => 'required|string|min:8|confirmed',
             'region_id' => 'nullable|exists:regions,id',
+            'fcm_token' => 'nullable|string|max:2048',
         ]);
 
         $user = User::create([
-            'name'              => $validated['name'],
-            'email'             => $validated['email'],
-            'phone'             => $validated['phone'] ?? null,
-            'password'          => Hash::make($validated['password']),
-            'role'              => 'customer',
-            'region_id'         => $validated['region_id'] ?? null,
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password' => Hash::make($validated['password']),
+            'role' => 'customer',
+            'region_id' => $validated['region_id'] ?? null,
             'email_verified_at' => now(),
+            'fcm_token' => $this->normalizeFcmToken($validated['fcm_token'] ?? null),
         ]);
 
         event(new Registered($user));
 
         return response()->json([
-            'message' => 'Account created successfully. Please check your email to verify your account.',
+            'message' => __('api.auth_registered'),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -50,11 +52,12 @@ class AuthController extends Controller
         $request->validate([
             'email' => 'required|email',
             'password' => 'required|string',
+            'fcm_token' => 'nullable|string|max:2048',
         ]);
 
         if (! Auth::attempt($request->only('email', 'password'))) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
+                'email' => [__('api.auth_invalid_credentials')],
             ]);
         }
 
@@ -64,16 +67,18 @@ class AuthController extends Controller
             Auth::logout();
 
             return response()->json([
-                'message' => 'Please verify your email address before logging in. Check your inbox for a verification link.',
+                'message' => __('api.auth_verify_email_first'),
             ], 403);
         }
 
         $token = $user->createToken('api-token')->plainTextToken;
 
+        $this->persistFcmToken($user, $request->input('fcm_token'));
+
         return response()->json([
-            'message' => 'Login successful.',
+            'message' => __('api.auth_login_success'),
             'token' => $token,
-            'user' => $this->formatUser($user),
+            'user' => $this->formatUser($user->fresh()),
         ]);
     }
 
@@ -93,7 +98,7 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'OTP sent successfully. Valid for 10 minutes.',
+            'message' => __('api.auth_otp_sent'),
             '_debug_otp' => $otp,
         ]);
     }
@@ -103,13 +108,14 @@ class AuthController extends Controller
         $request->validate([
             'phone' => 'required|exists:users,phone',
             'otp' => 'required|string|size:6',
+            'fcm_token' => 'nullable|string|max:2048',
         ]);
 
         $user = User::where('phone', $request->phone)->firstOrFail();
 
         if (! $user->isOtpValid() || $user->otp !== $request->otp) {
             return response()->json([
-                'message' => 'Invalid or expired OTP. Please request a new one.',
+                'message' => __('api.auth_otp_invalid'),
             ], 422);
         }
 
@@ -121,18 +127,36 @@ class AuthController extends Controller
 
         $token = $user->createToken('otp-token')->plainTextToken;
 
+        $this->persistFcmToken($user, $request->input('fcm_token'));
+
         return response()->json([
-            'message' => 'OTP verified. Login successful.',
+            'message' => __('api.auth_otp_verified'),
             'token' => $token,
-            'user' => $this->formatUser($user),
+            'user' => $this->formatUser($user->fresh()),
         ]);
+    }
+
+    public function updateFcmToken(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'fcm_token' => 'sometimes|nullable|string|max:2048',
+        ]);
+
+        if (array_key_exists('fcm_token', $validated)) {
+            $request->user()->update([
+                'fcm_token' => $this->normalizeFcmToken($validated['fcm_token']),
+            ]);
+        }
+
+        return response()->json(['message' => __('api.fcm_token_saved')]);
     }
 
     public function logout(Request $request): JsonResponse
     {
+        $request->user()->update(['fcm_token' => null]);
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out successfully.']);
+        return response()->json(['message' => __('api.auth_logout_success')]);
     }
 
     public function me(Request $request): JsonResponse
@@ -140,6 +164,27 @@ class AuthController extends Controller
         $user = $request->user()->load('region.city.governorate.country');
 
         return response()->json(['data' => $this->formatUser($user)]);
+    }
+
+    private function normalizeFcmToken(mixed $token): ?string
+    {
+        if (! is_string($token)) {
+            return null;
+        }
+
+        $token = trim($token);
+
+        return $token === '' ? null : $token;
+    }
+
+    private function persistFcmToken(User $user, mixed $token): void
+    {
+        $normalized = $this->normalizeFcmToken($token);
+        if ($normalized === null) {
+            return;
+        }
+
+        $user->forceFill(['fcm_token' => $normalized])->save();
     }
 
     private function formatUser(User $user): array

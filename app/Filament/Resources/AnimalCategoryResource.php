@@ -2,10 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\AnimalCategoryResource\Pages;
 use App\Models\AnimalCategory;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -21,17 +20,32 @@ class AnimalCategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';
 
-    protected static ?string $navigationLabel = 'Animal Categories';
-
-    protected static ?string $navigationGroup = 'Animals & Vaccines';
-
     protected static ?int $navigationSort = 1;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_animals');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.animal_category.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.animal_category.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.animal_category.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->maxLength(100),
-            Textarea::make('description')->nullable()->rows(3),
+            ...TranslatableFields::nameAndDescriptionSections(100, 4),
         ]);
     }
 
@@ -42,8 +56,8 @@ class AnimalCategoryResource extends Resource
                 TextColumn::make('id')->sortable()->width(60),
                 TextColumn::make('name')->searchable()->sortable(),
                 TextColumn::make('description')->limit(60)->toggleable(),
-                TextColumn::make('animals_count')->counts('animals')->label('Animals')->sortable(),
-                TextColumn::make('created_at')->dateTime()->toggleable(),
+                TextColumn::make('animals_count')->counts('animals')->label(__('filament.resources.animal.navigation'))->sortable(),
+                TextColumn::make('created_at')->dateTime()->toggleable()->label(__('filament.labels.created_at')),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])
             ->bulkActions([BulkActionGroup::make([DeleteBulkAction::make()])]);

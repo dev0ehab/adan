@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\VaccineResource\Pages;
 use App\Models\AnimalCategory;
 use App\Models\Vaccine;
@@ -26,22 +27,40 @@ class VaccineResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-beaker';
 
-    protected static ?string $navigationGroup = 'Animals & Vaccines';
-
     protected static ?int $navigationSort = 3;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_animals');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.vaccine.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.vaccine.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.vaccine.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Select::make('animal_category_id')
-                ->label('Animal Category')
+                ->label(__('filament.labels.animal_category'))
                 ->options(AnimalCategory::all()->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
-            TextInput::make('name')->required()->maxLength(100)->label('Vaccine Name'),
+            ...TranslatableFields::nameSection(100),
             Toggle::make('is_lifetime')
-                ->label('Lifetime vaccine (given only once)')
-                ->reactive()
+                ->label(__('filament.labels.lifetime_vaccine'))
+                ->live()
                 ->afterStateUpdated(function ($state, callable $set) {
                     if ($state) {
                         $set('doses_count', 1);
@@ -53,13 +72,15 @@ class VaccineResource extends Resource
                 ->required()
                 ->default(1)
                 ->minValue(1)
-                ->label('Number of Doses')
+                ->label(__('filament.labels.number_of_doses'))
                 ->disabled(fn (Get $get): bool => (bool) $get('is_lifetime'))
                 ->dehydrated(),
             TextInput::make('interval_days')
                 ->numeric()->nullable()->minValue(1)
-                ->label('Interval Between Doses (days)')
-                ->helperText('e.g. 180 for every 6 months. Leave empty if not recurring.'),
+                ->label(__('filament.labels.interval_between_doses'))
+                ->helperText(__('filament.labels.interval_helper'))
+                ->hidden(fn (Get $get): bool => (bool) $get('is_lifetime'))
+                ->dehydrated(fn (Get $get): bool => ! (bool) $get('is_lifetime')),
         ]);
     }
 
@@ -67,17 +88,17 @@ class VaccineResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable()->width(60),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('animalCategory.name')->label('Animal Category')->sortable()->badge()->color('info'),
-                TextColumn::make('doses_count')->label('Doses'),
-                TextColumn::make('interval_days')->label('Interval (days)')->placeholder('—'),
-                IconColumn::make('is_lifetime')->label('Lifetime?')->boolean(),
-                TextColumn::make('created_at')->dateTime()->toggleable(),
+                TextColumn::make('id')->sortable()->width(60)->label(__('filament.labels.id')),
+                TextColumn::make('name')->searchable()->sortable()->label(__('filament.labels.vaccine_name')),
+                TextColumn::make('animalCategory.name')->label(__('filament.labels.animal_category'))->sortable()->badge()->color('info'),
+                TextColumn::make('doses_count')->label(__('filament.labels.doses')),
+                TextColumn::make('interval_days')->label(__('filament.labels.interval_days'))->placeholder('—'),
+                IconColumn::make('is_lifetime')->label(__('filament.labels.lifetime'))->boolean(),
+                TextColumn::make('created_at')->dateTime()->toggleable()->label(__('filament.labels.created_at')),
             ])
             ->filters([
                 SelectFilter::make('animal_category_id')
-                    ->label('Animal Category')
+                    ->label(__('filament.labels.animal_category'))
                     ->options(AnimalCategory::all()->pluck('name', 'id'))
                     ->searchable(),
             ])

@@ -49,17 +49,17 @@ class VaccineScheduleController extends Controller
     public function markDone(Request $request, VaccineSchedule $schedule): JsonResponse
     {
         if ($schedule->userAnimal->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
+            return response()->json(['message' => __('api.vaccine_unauthorized')], 403);
         }
 
         if ($schedule->status === 'done') {
-            return response()->json(['message' => 'This vaccine has already been marked as done.'], 422);
+            return response()->json(['message' => __('api.vaccine_already_done')], 422);
         }
 
         $updated = $this->scheduleService->markAsDone($schedule);
 
         return response()->json([
-            'message' => 'Vaccine marked as done. Next dose scheduled if applicable.',
+            'message' => __('api.vaccine_marked_done'),
             'data' => $updated->load('vaccine', 'userAnimal.animal'),
         ]);
     }

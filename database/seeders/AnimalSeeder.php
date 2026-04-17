@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Animal;
 use App\Models\AnimalCategory;
+use Database\Seeders\Support\Bilingual;
+use Database\Seeders\Support\SeedArabic;
 use Illuminate\Database\Seeder;
 
 class AnimalSeeder extends Seeder
@@ -21,14 +23,18 @@ class AnimalSeeder extends Seeder
             'Fish' => ['Nile Tilapia', 'Catfish', 'Mullet'],
         ];
 
-        foreach ($data as $categoryName => $animals) {
-            $category = AnimalCategory::where('name', $categoryName)->first();
+        foreach ($data as $categoryEn => $animals) {
+            $category = AnimalCategory::where('name->en', $categoryEn)->first();
             if (! $category) {
                 continue;
             }
             foreach ($animals as $animalName) {
-                Animal::firstOrCreate(
-                    ['name' => $animalName, 'category_id' => $category->id]
+                Animal::updateOrCreate(
+                    ['category_id' => $category->id, 'name->en' => $animalName],
+                    [
+                        'category_id' => $category->id,
+                        'name' => Bilingual::map($animalName, SeedArabic::animalName($animalName)),
+                    ],
                 );
             }
         }

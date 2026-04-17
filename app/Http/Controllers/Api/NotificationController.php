@@ -39,7 +39,7 @@ class NotificationController extends Controller
         $notification = $request->user()->notifications()->findOrFail($id);
         $notification->markAsRead();
 
-        return response()->json(['message' => 'Marked as read.']);
+        return response()->json(['message' => __('api.notification_marked_read')]);
     }
 
     public function markAllRead(Request $request): JsonResponse
@@ -48,7 +48,7 @@ class NotificationController extends Controller
         $request->user()->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->json([
-            'message' => "Marked {$count} notifications as read.",
+            'message' => __('api.notifications_marked_read', ['count' => $count]),
         ]);
     }
 

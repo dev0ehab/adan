@@ -48,7 +48,7 @@ class UserAnimalController extends Controller
         $userAnimal->load('pendingSchedules.vaccine');
 
         return response()->json([
-            'message' => 'Animal registered successfully. Vaccine schedule has been generated.',
+            'message' => __('api.animal_registered'),
             'data' => $userAnimal,
         ], 201);
     }
@@ -56,7 +56,7 @@ class UserAnimalController extends Controller
     public function show(Request $request, UserAnimal $userAnimal): JsonResponse
     {
         if ($userAnimal->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
+            return response()->json(['message' => __('api.forbidden')], 403);
         }
 
         $userAnimal->load([
@@ -71,11 +71,11 @@ class UserAnimalController extends Controller
     public function destroy(Request $request, UserAnimal $userAnimal): JsonResponse
     {
         if ($userAnimal->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized.'], 403);
+            return response()->json(['message' => __('api.forbidden')], 403);
         }
 
         $userAnimal->delete();
 
-        return response()->json(['message' => 'Animal removed from your profile.']);
+        return response()->json(['message' => __('api.animal_removed')]);
     }
 }

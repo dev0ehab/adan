@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\AnimalCategory;
 use App\Models\Vaccine;
+use Database\Seeders\Support\Bilingual;
+use Database\Seeders\Support\SeedArabic;
 use Illuminate\Database\Seeder;
 
 class VaccineSeeder extends Seeder
@@ -38,15 +40,17 @@ class VaccineSeeder extends Seeder
             ],
         ];
 
-        foreach ($data as $categoryName => $vaccines) {
-            $category = AnimalCategory::where('name', $categoryName)->first();
+        foreach ($data as $categoryEn => $vaccines) {
+            $category = AnimalCategory::where('name->en', $categoryEn)->first();
             if (! $category) {
                 continue;
             }
             foreach ($vaccines as $v) {
-                Vaccine::firstOrCreate(
-                    ['name' => $v['name'], 'animal_category_id' => $category->id],
-                    $v
+                $name = Bilingual::map($v['name'], SeedArabic::vaccineName($v['name']));
+                unset($v['name']);
+                Vaccine::updateOrCreate(
+                    ['animal_category_id' => $category->id, 'name->en' => $name['en']],
+                    array_merge($v, ['animal_category_id' => $category->id, 'name' => $name]),
                 );
             }
         }

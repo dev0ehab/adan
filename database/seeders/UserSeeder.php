@@ -15,7 +15,7 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'admin@adan.com'],
             [
-                'name' => 'Dr. Admin',
+                'name' => 'Dr. Admin — د. المشرف',
                 'phone' => '+201000000000',
                 'password' => 'password',
                 'role' => 'doctor',
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'doctor@adan.com'],
             [
-                'name' => 'Dr. Ahmed Hassan',
+                'name' => 'Dr. Ahmed Hassan — د. أحمد حسن',
                 'phone' => '+201001234567',
                 'password' => 'password',
                 'role' => 'doctor',
@@ -39,7 +39,7 @@ class UserSeeder extends Seeder
         User::firstOrCreate(
             ['email' => 'customer@adan.com'],
             [
-                'name' => 'Mohammed Fathy',
+                'name' => 'Mohammed Fathy — محمد فتحي',
                 'phone' => '+201112345678',
                 'password' => 'password',
                 'role' => 'customer',

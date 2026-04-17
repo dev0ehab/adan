@@ -2,13 +2,12 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\AnimalResource\Pages;
 use App\Filament\Resources\AnimalResource\RelationManagers\VaccinesRelationManager;
 use App\Models\Animal;
 use App\Models\AnimalCategory;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -25,20 +24,37 @@ class AnimalResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';
 
-    protected static ?string $navigationGroup = 'Animals & Vaccines';
-
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_animals');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.animal.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.animal.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.animal.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Select::make('category_id')
-                ->label('Category')
+                ->label(__('filament.labels.category'))
                 ->options(AnimalCategory::all()->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
-            TextInput::make('name')->required()->maxLength(100)->label('Animal Name'),
-            Textarea::make('description')->nullable()->rows(3),
+            ...TranslatableFields::nameAndDescriptionSections(100, 4),
         ]);
     }
 
@@ -46,15 +62,15 @@ class AnimalResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable()->width(60),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('category.name')->label('Category')->badge()->color('success')->sortable(),
-                TextColumn::make('vaccines_count')->counts('vaccines')->label('Vaccines')->sortable(),
-                TextColumn::make('created_at')->dateTime()->toggleable(),
+                TextColumn::make('id')->sortable()->width(60)->label(__('filament.labels.id')),
+                TextColumn::make('name')->searchable()->sortable()->label(__('filament.labels.animal_name')),
+                TextColumn::make('category.name')->label(__('filament.labels.category'))->badge()->color('success')->sortable(),
+                TextColumn::make('vaccines_count')->counts('vaccines')->label(__('filament.labels.vaccines'))->sortable(),
+                TextColumn::make('created_at')->dateTime()->toggleable()->label(__('filament.labels.created_at')),
             ])
             ->filters([
                 SelectFilter::make('category_id')
-                    ->label('Category')
+                    ->label(__('filament.labels.category'))
                     ->options(AnimalCategory::all()->pluck('name', 'id')),
             ])
             ->actions([EditAction::make(), DeleteAction::make()])

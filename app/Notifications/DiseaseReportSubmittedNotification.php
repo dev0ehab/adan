@@ -21,13 +21,15 @@ class DiseaseReportSubmittedNotification extends Notification implements ShouldQ
 
     public function toMail(object $notifiable): MailMessage
     {
+        $this->report->loadMissing('category');
+
         return (new MailMessage)
             ->subject('✅ Your Disease Report Has Been Received')
             ->greeting("Hello {$notifiable->name},")
             ->line("We have received your disease report: **\"{$this->report->title}\"**.")
             ->line('Our veterinary team will review it shortly. You will be notified once a decision has been made.')
             ->line('📍 **Location:** '.($this->report->region?->name ?? '—'))
-            ->line("🐄 **Animal:** {$this->report->animal->name}")
+            ->line('🐄 **Animal category:** '.(optional($this->report->category)->name ?? '—'))
             ->line("⚠️ **Severity:** {$this->report->severity}")
             ->action('View Your Reports', env('FRONTEND_URL', 'http://localhost:5173').'/reports')
             ->salutation('Thank you for helping keep animals safe, The ADAN Team');

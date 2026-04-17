@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources;
 
+use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\GovernorateResource\Pages;
 use App\Models\Country;
 use App\Models\Governorate;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
@@ -23,22 +23,37 @@ class GovernorateResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $navigationGroup = 'Locations';
-
     protected static ?int $navigationSort = 2;
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('filament.nav_locations');
+    }
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.resources.governorate.navigation');
+    }
+
+    public static function getModelLabel(): string
+    {
+        return __('filament.resources.governorate.model');
+    }
+
+    public static function getPluralModelLabel(): string
+    {
+        return __('filament.resources.governorate.plural');
+    }
 
     public static function form(Form $form): Form
     {
         return $form->schema([
             Select::make('country_id')
-                ->label('Country')
+                ->label(__('filament.labels.country'))
                 ->options(Country::all()->pluck('name', 'id'))
                 ->searchable()
                 ->required(),
-            TextInput::make('name')
-                ->required()
-                ->maxLength(100)
-                ->label('Governorate Name'),
+            ...TranslatableFields::nameSection(100),
         ]);
     }
 
@@ -46,15 +61,15 @@ class GovernorateResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id')->sortable()->width(60),
-                TextColumn::make('name')->searchable()->sortable(),
-                TextColumn::make('country.name')->label('Country')->sortable()->badge()->color('info'),
-                TextColumn::make('cities_count')->counts('cities')->label('Cities')->sortable(),
-                TextColumn::make('created_at')->dateTime()->toggleable(),
+                TextColumn::make('id')->sortable()->width(60)->label(__('filament.labels.id')),
+                TextColumn::make('name')->searchable()->sortable()->label(__('filament.labels.governorate_name')),
+                TextColumn::make('country.name')->label(__('filament.labels.country'))->sortable()->badge()->color('info'),
+                TextColumn::make('cities_count')->counts('cities')->label(__('filament.labels.cities_count'))->sortable(),
+                TextColumn::make('created_at')->dateTime()->toggleable()->label(__('filament.labels.created_at')),
             ])
             ->filters([
                 SelectFilter::make('country_id')
-                    ->label('Country')
+                    ->label(__('filament.labels.country'))
                     ->options(Country::all()->pluck('name', 'id'))
                     ->searchable(),
             ])
