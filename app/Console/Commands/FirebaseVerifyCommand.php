@@ -44,6 +44,10 @@ class FirebaseVerifyCommand extends Command
         $this->line('Resolved credentials path:');
         $this->line('  '.$path);
 
+        if (str_contains(str_replace('\\', '/', $path), '/public/')) {
+            $this->components->warn('Credentials live under public/: never commit this file; Apache should block HTTP access to firebase*.json (see public/.htaccess). Prefer storage/app/ in production.');
+        }
+
         if (! File::isFile($path)) {
             $this->components->error('That path is not a file. Fix FIREBASE_CREDENTIALS or move the JSON file.');
 

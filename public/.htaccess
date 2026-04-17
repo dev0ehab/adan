@@ -1,3 +1,10 @@
+<IfModule mod_authz_core.c>
+    # Service account JSON must not be downloadable (even if placed under public/ for path convenience).
+    <FilesMatch "^firebase.*\.json$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
