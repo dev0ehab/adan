@@ -7,5 +7,4 @@ git pull
 
 
 # Commands to run after deployment
-composer install
-php artisan migrate:fresh --seed
+php artisan migrate
