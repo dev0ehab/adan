@@ -13,21 +13,21 @@ class LocationController extends Controller
 {
     public function countries(): JsonResponse
     {
-        $countries = Country::withCount('governorates')->orderBy('name')->get();
+        $countries = Country::withCount('governorates')->whereHas('governorates.cities.regions')->orderBy('name')->get();
 
         return response()->json(['data' => $countries]);
     }
 
     public function governorates(Country $country): JsonResponse
     {
-        $governorates = $country->governorates()->withCount('cities')->orderBy('name')->get();
+        $governorates = $country->governorates()->whereHas('cities.regions')->withCount('cities')->orderBy('name')->get();
 
         return response()->json(['data' => $governorates]);
     }
 
     public function cities(Governorate $governorate): JsonResponse
     {
-        $cities = $governorate->cities()->withCount('regions')->orderBy('name')->get();
+        $cities = $governorate->cities()->whereHas('regions')->withCount('regions')->orderBy('name')->get();
 
         return response()->json(['data' => $cities]);
     }

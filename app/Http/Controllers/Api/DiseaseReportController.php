@@ -30,26 +30,26 @@ class DiseaseReportController extends Controller
     {
         $validated = $request->validate([
             'category_id' => 'required|exists:animal_categories,id',
-            'region_id' => 'required|exists:regions,id',
-            'title' => 'required|string|max:255',
+            'region_id'   => 'required|exists:regions,id',
+            'title'       => 'required|string|max:255',
             'description' => 'required|string|min:20',
-            'severity' => 'required|in:low,moderate,high',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
-            'images' => 'nullable|array|max:5',
-            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:10240',
+            'severity'    => 'required|in:low,moderate,high,critical',
+            'latitude'    => 'nullable|numeric|between:-90,90',
+            'longitude'   => 'nullable|numeric|between:-180,180',
+            'images'      => 'nullable|array|max:5',
+            'images.*'    => 'image|mimes:jpg,jpeg,png,webp|max:10240',
         ]);
 
         $report = DiseaseReport::create([
-            'user_id' => $request->user()->id,
+            'user_id'     => $request->user()->id,
             'category_id' => $validated['category_id'],
-            'region_id' => $validated['region_id'],
-            'title' => $validated['title'],
+            'region_id'   => $validated['region_id'],
+            'title'       => $validated['title'],
             'description' => $validated['description'],
-            'severity' => $validated['severity'],
-            'latitude' => $validated['latitude'] ?? null,
-            'longitude' => $validated['longitude'] ?? null,
-            'status' => 'pending',
+            'severity'    => $validated['severity'],
+            'latitude'    => $validated['latitude'] ?? null,
+            'longitude'   => $validated['longitude'] ?? null,
+            'status'      => 'pending',
         ]);
 
         if ($request->hasFile('images')) {
@@ -70,7 +70,7 @@ class DiseaseReportController extends Controller
 
         return response()->json([
             'message' => __('api.report_submitted'),
-            'data' => $this->formatReport($report),
+            'data'    => $this->formatReport($report),
         ], 201);
     }
 
