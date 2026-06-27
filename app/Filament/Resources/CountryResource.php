@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\CountryResource\Pages;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Models\Country;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -18,6 +19,9 @@ use Filament\Tables\Table;
 
 class CountryResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'locations';
     protected static ?string $model = Country::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-globe-alt';

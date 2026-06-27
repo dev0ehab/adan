@@ -31,6 +31,19 @@ class SendPushNotification extends Page
 
     protected static string $view = 'filament.pages.send-push-notification';
 
+    public static function canAccess(): bool
+    {
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+        if ($user->getRoleNames()->isEmpty() || $user->hasAnyRole(['admin', 'super_admin'])) {
+            return true;
+        }
+
+        return $user->can('send_push_notifications');
+    }
+
     /**
      * @var array<string, mixed>|null
      */

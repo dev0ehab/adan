@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\DiseaseReportResource\Pages;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Jobs\SendDiseaseAlertJob;
 use App\Models\DiseaseReport;
 use App\Models\Region;
@@ -29,6 +30,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class DiseaseReportResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'disease_reports';
     protected static ?string $model = DiseaseReport::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-magnifying-glass';

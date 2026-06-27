@@ -125,6 +125,10 @@ return [
         'email'                  => 'البريد',
         'phone'                  => 'الهاتف',
         'created_at'             => 'تاريخ الإنشاء',
+        'role_name'              => 'اسم الدور',
+        'permissions_count'      => 'الصلاحيات',
+        'dashboard_role'         => 'دور لوحة التحكم',
+        'dashboard_role_help'    => 'حدد دور لوحة التحكم للتحكم في الوحدات التي يمكن للمستخدم الوصول إليها.',
     ],
 
     'user_roles' => [
@@ -180,6 +184,11 @@ return [
             'model'      => 'مستخدم',
             'plural'     => 'المستخدمون',
         ],
+        'role' => [
+            'navigation' => 'الأدوار',
+            'model'      => 'دور',
+            'plural'     => 'الأدوار',
+        ],
     ],
 
     'disease_report' => [
@@ -202,6 +211,44 @@ return [
         'interval_helper' => 'الأيام بين الجرعات أو التكرار السنوي. اتركه فارغاً إن كان لمرة واحدة فقط.',
         'lifetime_toggle' => 'يُعطى مرة واحدة في العمر؟',
         'lifetime_helper' => 'فعّل إذا كان هذا اللقاح يُعطى مرة واحدة فقط خلال حياة الحيوان.',
+    ],
+
+    'permission_groups' => [
+        'users'             => 'المستخدمون',
+        'disease_reports'   => 'تقارير الأمراض',
+        'animals'           => 'الحيوانات',
+        'animal_categories' => 'فئات الحيوانات',
+        'vaccines'          => 'اللقاحات',
+        'locations'         => 'المواقع',
+        'notifications'     => 'الإشعارات',
+    ],
+
+    'permissions' => [
+        'view_users'                => 'عرض',
+        'create_users'              => 'إنشاء',
+        'edit_users'                => 'تعديل',
+        'delete_users'              => 'حذف',
+        'view_disease_reports'      => 'عرض',
+        'edit_disease_reports'      => 'قبول / رفض',
+        'delete_disease_reports'    => 'حذف',
+        'view_animals'              => 'عرض',
+        'create_animals'            => 'إنشاء',
+        'edit_animals'              => 'تعديل',
+        'delete_animals'            => 'حذف',
+        'view_animal_categories'    => 'عرض',
+        'create_animal_categories'  => 'إنشاء',
+        'edit_animal_categories'    => 'تعديل',
+        'delete_animal_categories'  => 'حذف',
+        'view_vaccines'             => 'عرض',
+        'create_vaccines'           => 'إنشاء',
+        'edit_vaccines'             => 'تعديل',
+        'delete_vaccines'           => 'حذف',
+        'view_locations'            => 'عرض',
+        'create_locations'          => 'إنشاء',
+        'edit_locations'            => 'تعديل',
+        'delete_locations'          => 'حذف',
+        'view_notifications'        => 'عرض',
+        'send_push_notifications'   => 'إرسال إشعارات فورية',
     ],
 
     'push' => [

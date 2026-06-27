@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\AnimalResource\Pages;
 use App\Filament\Resources\AnimalResource\RelationManagers\VaccinesRelationManager;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Models\Animal;
 use App\Models\AnimalCategory;
 use Filament\Forms\Components\Select;
@@ -20,6 +21,9 @@ use Filament\Tables\Table;
 
 class AnimalResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'animals';
     protected static ?string $model = Animal::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-heart';

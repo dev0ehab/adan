@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f2d1e7a4af23b1463ce170960f21b176",
+    "content-hash": "4f3da7d80761b9eacf3613dac9abee0c",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -1831,12 +1831,12 @@
             "version": "v7.0.4",
             "source": {
                 "type": "git",
-                "url": "https://github.com/firebase/php-jwt.git",
+                "url": "https://github.com/googleapis/php-jwt.git",
                 "reference": "e41f1bd7dbe3c5455c3f72d4338cfeb083b71931"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/firebase/php-jwt/zipball/e41f1bd7dbe3c5455c3f72d4338cfeb083b71931",
+                "url": "https://api.github.com/repos/googleapis/php-jwt/zipball/e41f1bd7dbe3c5455c3f72d4338cfeb083b71931",
                 "reference": "e41f1bd7dbe3c5455c3f72d4338cfeb083b71931",
                 "shasum": ""
             },
@@ -1885,8 +1885,8 @@
                 "php"
             ],
             "support": {
-                "issues": "https://github.com/firebase/php-jwt/issues",
-                "source": "https://github.com/firebase/php-jwt/tree/v7.0.4"
+                "issues": "https://github.com/googleapis/php-jwt/issues",
+                "source": "https://github.com/googleapis/php-jwt/tree/v7.0.4"
             },
             "time": "2026-03-27T21:17:19+00:00"
         },
@@ -12909,5 +12909,9 @@
         "php": "^8.2"
     },
     "platform-dev": [],
+    "platform-overrides": {
+        "ext-sodium": "1.0",
+        "ext-redis": "6.1"
+    },
     "plugin-api-version": "2.3.0"
 }

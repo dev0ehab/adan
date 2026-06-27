@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\RegionResource\Pages;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Models\City;
 use App\Models\Region;
 use Filament\Forms\Components\Select;
@@ -18,6 +19,9 @@ use Filament\Tables\Table;
 
 class RegionResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'locations';
     protected static ?string $model = Region::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-map';

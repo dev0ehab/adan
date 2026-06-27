@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\GovernorateResource\Pages;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Models\Country;
 use App\Models\Governorate;
 use Filament\Forms\Components\Select;
@@ -19,6 +20,9 @@ use Filament\Tables\Table;
 
 class GovernorateResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'locations';
     protected static ?string $model = Governorate::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office';

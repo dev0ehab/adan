@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\CityResource\Pages;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Models\City;
 use App\Models\Governorate;
 use Filament\Forms\Components\Select;
@@ -18,6 +19,9 @@ use Filament\Tables\Table;
 
 class CityResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'locations';
     protected static ?string $model = City::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-building-office-2';

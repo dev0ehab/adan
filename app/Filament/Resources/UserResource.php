@@ -3,11 +3,13 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Models\Region;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Tables\Actions\BulkActionGroup;
 use Filament\Tables\Actions\DeleteBulkAction;
@@ -20,6 +22,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 class UserResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'users';
+
     protected static ?string $model = User::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-users';
@@ -47,22 +53,51 @@ class UserResource extends Resource
     public static function form(Form $form): Form
     {
         return $form->schema([
-            TextInput::make('name')->required()->maxLength(100)->label(__('filament.labels.name')),
-            TextInput::make('email')->email()->required()->unique(ignoreRecord: true)->label(__('filament.labels.email')),
-            TextInput::make('phone')->nullable()->tel()->label(__('filament.labels.phone')),
+            TextInput::make('name')
+                ->required()
+                ->maxLength(100)
+                ->label(__('filament.labels.name')),
+
+            TextInput::make('email')
+                ->email()
+                ->required()
+                ->unique(ignoreRecord: true)
+                ->label(__('filament.labels.email')),
+
+            TextInput::make('phone')
+                ->nullable()
+                ->tel()
+                ->label(__('filament.labels.phone')),
+
             Select::make('role')
                 ->label(__('filament.labels.role'))
                 ->options([
                     'customer' => __('filament.user_roles.customer_breeder'),
-                    'doctor' => __('filament.user_roles.doctor_vet'),
+                    'doctor'   => __('filament.user_roles.doctor_vet'),
                 ])
                 ->required()
-                ->default('customer'),
+                ->default('customer')
+                ->live(),
+
+            // ── Dashboard roles (Spatie) — only relevant for doctor/staff accounts ──
+            Select::make('spatie_roles')
+                ->label(__('filament.labels.dashboard_role'))
+                ->helperText(__('filament.labels.dashboard_role_help'))
+                ->multiple()
+                ->options(
+                    \Spatie\Permission\Models\Role::where('guard_name', 'web')
+                        ->pluck('name', 'name')
+                )
+                ->preload()
+                ->searchable()
+                ->visible(fn (Get $get): bool => $get('role') === 'doctor'),
+
             TextInput::make('password')
                 ->password()
                 ->required(fn (string $operation): bool => $operation === 'create')
                 ->dehydrated(fn ($state) => filled($state))
                 ->label(__('filament.labels.password')),
+
             Select::make('region_id')
                 ->label(__('filament.labels.region'))
                 ->options(
@@ -90,16 +125,21 @@ class UserResource extends Resource
                     ->label(__('filament.labels.role'))
                     ->formatStateUsing(fn (?string $state): string => match ($state) {
                         'customer' => __('filament.user_roles.customer'),
-                        'doctor' => __('filament.user_roles.doctor'),
-                        default => (string) $state,
+                        'doctor'   => __('filament.user_roles.doctor'),
+                        default    => (string) $state,
                     })
                     ->badge()
                     ->color(fn (string $state) => match ($state) {
-                        'doctor' => 'success',
+                        'doctor'   => 'success',
                         'customer' => 'info',
-                        default => 'gray',
+                        default    => 'gray',
                     }),
-                TextColumn::make('region.name')->label(__('filament.labels.region'))->placeholder('—')->sortable(),
+                TextColumn::make('roles.name')
+                    ->label(__('filament.labels.dashboard_role'))
+                    ->badge()
+                    ->color('warning')
+                    ->separator(',')
+                    ->placeholder('—'),
                 IconColumn::make('email_verified_at')
                     ->label(__('filament.labels.verified'))
                     ->boolean()
@@ -111,7 +151,7 @@ class UserResource extends Resource
                     ->label(__('filament.labels.role'))
                     ->options([
                         'customer' => __('filament.user_roles.customer'),
-                        'doctor' => __('filament.user_roles.doctor'),
+                        'doctor'   => __('filament.user_roles.doctor'),
                     ]),
                 SelectFilter::make('region_id')
                     ->label(__('filament.labels.region'))
@@ -125,8 +165,7 @@ class UserResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
-            ->where('id', '!=', auth()->id());
+        return parent::getEloquentQuery()->where('id', '!=', auth()->id());
     }
 
     public static function getRelations(): array
@@ -137,9 +176,9 @@ class UserResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListUsers::route('/'),
+            'index'  => Pages\ListUsers::route('/'),
             'create' => Pages\CreateUser::route('/create'),
-            'edit' => Pages\EditUser::route('/{record}/edit'),
+            'edit'   => Pages\EditUser::route('/{record}/edit'),
         ];
     }
 }

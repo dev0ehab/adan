@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Forms\TranslatableFields;
 use App\Filament\Resources\AnimalCategoryResource\Pages;
+use App\Filament\Traits\ChecksResourcePermissions;
 use App\Models\AnimalCategory;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -16,6 +17,9 @@ use Filament\Tables\Table;
 
 class AnimalCategoryResource extends Resource
 {
+    use ChecksResourcePermissions;
+
+    protected static string $permissionPrefix = 'animal_categories';
     protected static ?string $model = AnimalCategory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-tag';

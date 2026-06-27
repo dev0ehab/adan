@@ -125,6 +125,10 @@ return [
         'email'                  => 'Email',
         'phone'                  => 'Phone',
         'created_at'             => 'Created At',
+        'role_name'              => 'Role Name',
+        'permissions_count'      => 'Permissions',
+        'dashboard_role'         => 'Dashboard Role',
+        'dashboard_role_help'    => 'Assign a dashboard role to control which modules this user can access.',
     ],
 
     'user_roles' => [
@@ -180,6 +184,11 @@ return [
             'model'      => 'User',
             'plural'     => 'Users',
         ],
+        'role' => [
+            'navigation' => 'Roles',
+            'model'      => 'Role',
+            'plural'     => 'Roles',
+        ],
     ],
 
     'disease_report' => [
@@ -202,6 +211,44 @@ return [
         'interval_helper' => 'Days between doses or annual repeat. Leave empty if one-time only.',
         'lifetime_toggle' => 'Given once in lifetime?',
         'lifetime_helper' => 'Enable if this vaccine is administered only once in the animal\'s life.',
+    ],
+
+    'permission_groups' => [
+        'users'            => 'Users',
+        'disease_reports'  => 'Disease Reports',
+        'animals'          => 'Animals',
+        'animal_categories'=> 'Animal Categories',
+        'vaccines'         => 'Vaccines',
+        'locations'        => 'Locations',
+        'notifications'    => 'Notifications',
+    ],
+
+    'permissions' => [
+        'view_users'                => 'View',
+        'create_users'              => 'Create',
+        'edit_users'                => 'Edit',
+        'delete_users'              => 'Delete',
+        'view_disease_reports'      => 'View',
+        'edit_disease_reports'      => 'Approve / Reject',
+        'delete_disease_reports'    => 'Delete',
+        'view_animals'              => 'View',
+        'create_animals'            => 'Create',
+        'edit_animals'              => 'Edit',
+        'delete_animals'            => 'Delete',
+        'view_animal_categories'    => 'View',
+        'create_animal_categories'  => 'Create',
+        'edit_animal_categories'    => 'Edit',
+        'delete_animal_categories'  => 'Delete',
+        'view_vaccines'             => 'View',
+        'create_vaccines'           => 'Create',
+        'edit_vaccines'             => 'Edit',
+        'delete_vaccines'           => 'Delete',
+        'view_locations'            => 'View',
+        'create_locations'          => 'Create',
+        'edit_locations'            => 'Edit',
+        'delete_locations'          => 'Delete',
+        'view_notifications'        => 'View',
+        'send_push_notifications'   => 'Send Push Notifications',
     ],
 
     'push' => [
