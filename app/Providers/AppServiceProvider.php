@@ -7,7 +7,10 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\Events\NotificationFailed;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
@@ -28,6 +31,19 @@ class AppServiceProvider extends ServiceProvider
             if (method_exists($user, 'hasRole') && $user->hasAnyRole(['admin', 'super_admin'])) {
                 return true;
             }
+        });
+
+        Event::listen(NotificationFailed::class, function (NotificationFailed $event): void {
+            if (! str_contains((string) $event->channel, 'Fcm')) {
+                return;
+            }
+            $report = $event->data['report'] ?? null;
+            $message = $report ? $report->error()?->getMessage() : 'unknown FCM failure';
+            Log::warning('FCM notification failed', [
+                'user_id' => $event->notifiable->getKey(),
+                'notification' => $event->notification::class,
+                'error' => $message,
+            ]);
         });
 
         RateLimiter::for('api', function (Request $request) {

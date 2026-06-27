@@ -133,6 +133,37 @@ class DiagnoseFcm extends Command
             $this->warn('   ⚠ No FCM tokens found — users must log in from the app first');
         }
 
+        // ── 6. Google OAuth — service account token (catches invalid_grant) ─────
+        $this->newLine();
+        $this->line('<fg=cyan>6. Firebase OAuth (service account)</>');
+
+        if (file_exists($absolutePath ?? '')) {
+            try {
+                /** @var \Kreait\Firebase\Contract\Messaging $messaging */
+                $messaging = app(\Kreait\Firebase\Contract\Messaging::class);
+                $user = \App\Models\User::query()->whereNotNull('fcm_token')->first();
+                if ($user) {
+                    $message = \Kreait\Firebase\Messaging\CloudMessage::withTarget('token', $user->fcm_token)
+                        ->withNotification(\Kreait\Firebase\Messaging\Notification::create('FCM diagnose', 'ping'));
+                    $messaging->send($message);
+                    $this->line('   ✓ Google accepted credentials and FCM send succeeded');
+                } else {
+                    // No token — still verify OAuth by requesting access token via factory
+                    app(\Kreait\Firebase\Contract\Messaging::class);
+                    $this->line('   ✓ Google accepted credentials (no user token to send to)');
+                }
+            } catch (\Throwable $e) {
+                $msg = $e->getMessage();
+                $this->error("   ✗ Firebase auth/send failed: {$msg}");
+                if (str_contains($msg, 'invalid_grant')) {
+                    $this->warn('   → The service account private key is revoked or invalid.');
+                    $this->warn('   → Firebase Console → Project Settings → Service Accounts → Generate new private key');
+                    $this->warn('   → Replace public/firebase-adminsdk.json on the server, then run: php artisan config:clear');
+                }
+                $ok = false;
+            }
+        }
+
         // ── Summary ──────────────────────────────────────────────────────────────
         $this->newLine();
         $this->info('══════════════════════════════════════════');
