@@ -41,6 +41,12 @@ class User extends Authenticatable implements FilamentUser, HasMedia, MustVerify
         ];
     }
 
+    // ─── Notification routing ───
+    public function routeNotificationForFcm(): ?string
+    {
+        return $this->fcm_token ?: null;
+    }
+
     // ─── Filament access control ───
     public function canAccessPanel(Panel $panel): bool
     {

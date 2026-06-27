@@ -7,6 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class ReportStatusNotification extends Notification implements ShouldQueue
 {
@@ -16,7 +18,7 @@ class ReportStatusNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', \NotificationChannels\Fcm\FcmChannel::class];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -42,13 +44,38 @@ class ReportStatusNotification extends Notification implements ShouldQueue
     public function toDatabase(object $notifiable): array
     {
         return [
-            'type' => 'report_status',
-            'title' => $this->report->isApproved() ? '✅ Report Approved' : '❌ Report Rejected',
-            'body' => $this->report->isApproved()
+            'type'      => 'report_status',
+            'title'     => $this->report->isApproved() ? '✅ Report Approved' : '❌ Report Rejected',
+            'body'      => $this->report->isApproved()
                 ? "Your report \"{$this->report->title}\" was approved. Alerts sent to ".($this->report->region?->name ?? 'the region').'.'
                 : "Your report \"{$this->report->title}\" was rejected. Reason: {$this->report->rejection_reason}",
             'report_id' => $this->report->id,
-            'status' => $this->report->status,
+            'status'    => $this->report->status,
         ];
+    }
+
+    public function toFcm(object $notifiable): FcmMessage
+    {
+        if ($this->report->isApproved()) {
+            $title = __('api.fcm_report_approved_title');
+            $body  = __('api.fcm_report_approved_body', [
+                'title'  => $this->report->title,
+                'region' => $this->report->region?->name ?? '',
+            ]);
+        } else {
+            $title = __('api.fcm_report_rejected_title');
+            $body  = __('api.fcm_report_rejected_body', [
+                'title'  => $this->report->title,
+                'reason' => $this->report->rejection_reason ?? '',
+            ]);
+        }
+
+        return FcmMessage::create()
+            ->notification(FcmNotification::create()->title($title)->body($body))
+            ->data([
+                'type'      => 'report_status',
+                'report_id' => (string) $this->report->id,
+                'status'    => $this->report->status ?? '',
+            ]);
     }
 }

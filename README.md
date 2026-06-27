@@ -90,6 +90,7 @@ GET /api/health
 | POST | /api/auth/verify-otp | No | Verify OTP and get token |
 | POST | /api/auth/logout | Yes | Revoke current token |
 | GET | /api/auth/me | Yes | Get authenticated user profile |
+| PUT | /api/auth/profile | Yes | Update authenticated user profile (name, email, phone, region_id) |
 
 ### Locations (Public)
 

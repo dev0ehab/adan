@@ -166,6 +166,27 @@ class AuthController extends Controller
         return response()->json(['data' => $this->formatUser($user)]);
     }
 
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => 'required|email|max:255|unique:users,email,'.$user->id,
+            'phone' => 'required|string|max:20',
+            'region_id' => 'required|exists:regions,id',
+        ]);
+
+        $user->update($validated);
+
+        $user->load('region.city.governorate.country');
+
+        return response()->json([
+            'message' => __('api.auth_profile_updated'),
+            'data' => $this->formatUser($user->fresh()),
+        ]);
+    }
+
     private function normalizeFcmToken(mixed $token): ?string
     {
         if (! is_string($token)) {
@@ -196,11 +217,15 @@ class AuthController extends Controller
             'phone' => $user->phone,
             'role' => $user->role,
             'email_verified' => $user->hasVerifiedEmail(),
+            'created_at' => $user->created_at?->toIso8601String(),
             'region' => $user->region ? [
                 'id' => $user->region->id,
                 'name' => $user->region->name,
+                'city_id' => $user->region->city_id,
                 'city' => $user->region->city?->name,
+                'governorate_id' => $user->region->city?->governorate_id,
                 'governorate' => $user->region->city?->governorate?->name,
+                'country_id' => $user->region->city?->governorate?->country_id,
                 'country' => $user->region->city?->governorate?->country?->name,
             ] : null,
         ];

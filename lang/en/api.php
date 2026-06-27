@@ -17,6 +17,7 @@ return [
     'auth_otp_invalid' => 'Invalid or expired OTP. Please request a new one.',
     'auth_otp_verified' => 'OTP verified. Login successful.',
     'auth_logout_success' => 'Logged out successfully.',
+    'auth_profile_updated' => 'Profile updated successfully.',
 
     'notification_marked_read' => 'Marked as read.',
     'notifications_marked_read' => 'Marked :count notifications as read.',

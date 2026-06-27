@@ -17,6 +17,7 @@ return [
     'auth_otp_invalid' => 'رمز التحقق غير صالح أو منتهٍ. اطلب رمزاً جديداً.',
     'auth_otp_verified' => 'تم التحقق من الرمز. تم تسجيل الدخول بنجاح.',
     'auth_logout_success' => 'تم تسجيل الخروج بنجاح.',
+    'auth_profile_updated' => 'تم تحديث الملف الشخصي بنجاح.',
 
     'notification_marked_read' => 'تمييز كمقروء.',
     'notifications_marked_read' => 'تمييز :count إشعاراً كمقروء.',

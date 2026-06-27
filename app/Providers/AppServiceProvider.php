@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Services\FcmService;
 use App\Services\PushNotificationService;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -13,15 +12,9 @@ use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        $this->app->singleton(FcmService::class, fn () => new FcmService);
-        $this->app->singleton(PushNotificationService::class, fn ($app) => new PushNotificationService(
-            $app->make(FcmService::class),
-        ));
+        // PushNotificationService has no constructor dependencies; let the container auto-resolve it.
     }
 
     /**

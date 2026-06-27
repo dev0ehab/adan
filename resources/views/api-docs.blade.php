@@ -81,6 +81,7 @@
                         $row('POST', '/auth/verify-otp', 'No', 'Verify OTP and obtain token'),
                         $row('POST', '/auth/logout', 'Yes', 'Revoke current token'),
                         $row('GET', '/auth/me', 'Yes', 'Current user profile'),
+                        $row('PUT', '/auth/profile', 'Yes', 'Update name, email, phone, and region (location)'),
                     ],
                 ],
                 'locations' => [

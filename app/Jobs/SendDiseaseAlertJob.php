@@ -24,25 +24,28 @@ class SendDiseaseAlertJob implements ShouldQueue
 
     public function handle(): void
     {
-        if ($this->report->region_id === null) {
-            $this->report->load('reporter');
-            $this->report->reporter?->notify(new ReportStatusNotification($this->report->fresh()));
+        $report = $this->report->fresh(['region', 'category', 'reporter']);
 
+        if ($report === null) {
             return;
         }
 
-        User::where('region_id', $this->report->region_id)
-            ->where('role', 'customer')
-            ->where('id', '!=', $this->report->user_id)
-            ->chunk(50, function ($users) {
-                foreach ($users as $user) {
-                    $user->notify(new DiseaseAlertNotification($this->report));
-                }
-            });
+        if ($report->region_id !== null) {
+            User::where('region_id', $report->region_id)
+                ->where('role', 'customer')
+                ->where('id', '!=', $report->user_id)
+                ->chunk(50, function ($users) use ($report) {
+                    foreach ($users as $user) {
+                        if (! $user instanceof User) {
+                            continue;
+                        }
+                        // Mail + database + FCM are all sent by DiseaseAlertNotification::via()
+                        $user->notify(new DiseaseAlertNotification($report));
+                    }
+                });
+        }
 
-        $this->report->load('reporter');
-        $this->report->reporter?->notify(
-            new ReportStatusNotification($this->report->fresh())
-        );
+        // Notify the reporter — mail + database + FCM sent by ReportStatusNotification::via()
+        $report->reporter?->notify(new ReportStatusNotification($report));
     }
 }

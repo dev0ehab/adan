@@ -4,10 +4,12 @@ namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 /**
- * Persists title/body + payload for GET /api/notifications (database channel).
- * FCM is sent separately by PushNotificationService.
+ * Persists title/body + payload for GET /api/notifications (database channel)
+ * and simultaneously sends a push via FCM.
  */
 class PushMessageNotification extends Notification
 {
@@ -27,7 +29,7 @@ class PushMessageNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', \NotificationChannels\Fcm\FcmChannel::class];
     }
 
     /**
@@ -37,7 +39,7 @@ class PushMessageNotification extends Notification
     {
         $row = [
             'title' => $this->title,
-            'body' => $this->body,
+            'body'  => $this->body,
         ];
 
         foreach ($this->payload as $key => $value) {
@@ -52,5 +54,24 @@ class PushMessageNotification extends Notification
         }
 
         return $row;
+    }
+
+    public function toFcm(object $notifiable): FcmMessage
+    {
+        $data = [];
+        foreach ($this->payload as $key => $value) {
+            if ($key === 'title' || $key === 'body') {
+                continue;
+            }
+            $data[(string) $key] = is_scalar($value) ? (string) $value : json_encode($value);
+        }
+
+        if (! array_key_exists('type', $data)) {
+            $data['type'] = 'push';
+        }
+
+        return FcmMessage::create()
+            ->notification(FcmNotification::create()->title($this->title)->body($this->body))
+            ->data($data);
     }
 }

@@ -7,6 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class VaccineReminderNotification extends Notification implements ShouldQueue
 {
@@ -16,15 +18,15 @@ class VaccineReminderNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', \NotificationChannels\Fcm\FcmChannel::class];
     }
 
     public function toMail(object $notifiable): MailMessage
     {
-        $vaccine = $this->schedule->vaccine;
-        $animal = $this->schedule->userAnimal;
+        $vaccine    = $this->schedule->vaccine;
+        $animal     = $this->schedule->userAnimal;
         $animalName = $animal->nickname ?? $animal->animal->name;
-        $date = $this->schedule->scheduled_date->format('M d, Y');
+        $date       = $this->schedule->scheduled_date->format('M d, Y');
 
         return (new MailMessage)
             ->subject("💉 Vaccine Reminder: {$vaccine->name} for {$animalName}")
@@ -38,17 +40,36 @@ class VaccineReminderNotification extends Notification implements ShouldQueue
 
     public function toDatabase(object $notifiable): array
     {
-        $vaccine = $this->schedule->vaccine;
-        $animal = $this->schedule->userAnimal;
+        $vaccine    = $this->schedule->vaccine;
+        $animal     = $this->schedule->userAnimal;
         $animalName = $animal->nickname ?? $animal->animal->name;
 
         return [
-            'type' => 'vaccine_reminder',
-            'title' => "Vaccine Due: {$vaccine->name}",
-            'body' => "{$animalName} needs {$vaccine->name} on {$this->schedule->scheduled_date->format('M d, Y')}",
-            'schedule_id' => $this->schedule->id,
-            'user_animal_id' => $this->schedule->user_animal_id,
-            'vaccine_id' => $this->schedule->vaccine_id,
+            'type'          => 'vaccine_reminder',
+            'title'         => "Vaccine Due: {$vaccine->name}",
+            'body'          => "{$animalName} needs {$vaccine->name} on {$this->schedule->scheduled_date->format('M d, Y')}",
+            'schedule_id'   => $this->schedule->id,
+            'user_animal_id'=> $this->schedule->user_animal_id,
+            'vaccine_id'    => $this->schedule->vaccine_id,
         ];
+    }
+
+    public function toFcm(object $notifiable): FcmMessage
+    {
+        $vaccine    = $this->schedule->vaccine;
+        $animal     = $this->schedule->userAnimal;
+        $animalName = $animal->nickname ?? $animal->animal->name;
+
+        return FcmMessage::create()
+            ->notification(
+                FcmNotification::create()
+                    ->title("💉 Vaccine Due: {$vaccine->name}")
+                    ->body("{$animalName} needs {$vaccine->name} on {$this->schedule->scheduled_date->format('M d, Y')}")
+            )
+            ->data([
+                'type'        => 'vaccine_reminder',
+                'schedule_id' => (string) $this->schedule->id,
+                'vaccine_id'  => (string) $this->schedule->vaccine_id,
+            ]);
     }
 }

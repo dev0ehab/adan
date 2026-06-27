@@ -7,14 +7,16 @@ use App\Notifications\PushMessageNotification;
 
 /**
  * High-level FCM + in-app (database) notifications.
+ *
+ * FCM delivery is handled transparently by each notification's toFcm() / FcmChannel.
  */
 class PushNotificationService
 {
-    public function __construct(private readonly FcmService $fcm) {}
-
     public function isConfigured(): bool
     {
-        return $this->fcm->isConfigured();
+        $path = config('firebase.credentials');
+
+        return is_string($path) && $path !== '' && is_readable($path);
     }
 
     /**
@@ -105,10 +107,7 @@ class PushNotificationService
      */
     private function sendToUserWithStore(User $user, string $title, string $body, array $data = []): void
     {
+        // PushMessageNotification sends to both 'database' and FCM channels.
         $user->notify(new PushMessageNotification($title, $body, $data));
-
-        if ($this->fcm->isConfigured()) {
-            $this->fcm->sendToUser($user, $title, $body, $data);
-        }
     }
 }

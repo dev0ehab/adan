@@ -216,6 +216,27 @@
                         ],
                         "url": "{{base_url}}/auth/me"
                     }
+                },
+                {
+                    "name": "Update profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            },
+                            {
+                                "key": "Accept",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Updated Name\",\n  \"email\": \"user@example.com\",\n  \"phone\": \"+201000000000\",\n  \"region_id\": 1\n}"
+                        },
+                        "url": "{{base_url}}/auth/profile"
+                    }
                 }
             ]
         },

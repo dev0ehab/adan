@@ -7,6 +7,8 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class DiseaseReportSubmittedNotification extends Notification implements ShouldQueue
 {
@@ -16,7 +18,7 @@ class DiseaseReportSubmittedNotification extends Notification implements ShouldQ
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', \NotificationChannels\Fcm\FcmChannel::class];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -38,10 +40,24 @@ class DiseaseReportSubmittedNotification extends Notification implements ShouldQ
     public function toDatabase(object $notifiable): array
     {
         return [
-            'type' => 'report_submitted',
-            'title' => 'Report Received & Under Review',
-            'body' => "Your report \"{$this->report->title}\" has been submitted and is awaiting veterinary review.",
+            'type'      => 'report_submitted',
+            'title'     => 'Report Received & Under Review',
+            'body'      => "Your report \"{$this->report->title}\" has been submitted and is awaiting veterinary review.",
             'report_id' => $this->report->id,
         ];
+    }
+
+    public function toFcm(object $notifiable): FcmMessage
+    {
+        return FcmMessage::create()
+            ->notification(
+                FcmNotification::create()
+                    ->title(__('api.fcm_report_submitted_title'))
+                    ->body(__('api.fcm_report_submitted_body', ['title' => $this->report->title]))
+            )
+            ->data([
+                'type'      => 'report_submitted',
+                'report_id' => (string) $this->report->id,
+            ]);
     }
 }

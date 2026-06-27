@@ -8,6 +8,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Str;
+use NotificationChannels\Fcm\FcmMessage;
+use NotificationChannels\Fcm\Resources\Notification as FcmNotification;
 
 class DiseaseAlertNotification extends Notification implements ShouldQueue
 {
@@ -17,7 +19,7 @@ class DiseaseAlertNotification extends Notification implements ShouldQueue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return ['mail', 'database', \NotificationChannels\Fcm\FcmChannel::class];
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -44,12 +46,34 @@ class DiseaseAlertNotification extends Notification implements ShouldQueue
         $this->report->loadMissing('category');
 
         return [
-            'type' => 'disease_alert',
-            'title' => "⚠️ Disease Alert: {$this->report->title}",
-            'body' => 'Confirmed in '.($this->report->region?->name ?? 'unknown').' — '.$this->report->severity.' severity. '.(optional($this->report->category)->name ?? 'Unknown').' affected.',
+            'type'      => 'disease_alert',
+            'title'     => "⚠️ Disease Alert: {$this->report->title}",
+            'body'      => 'Confirmed in '.($this->report->region?->name ?? 'unknown').' — '.$this->report->severity.' severity. '.(optional($this->report->category)->name ?? 'Unknown').' affected.',
             'report_id' => $this->report->id,
             'region_id' => $this->report->region_id,
-            'severity' => $this->report->severity,
+            'severity'  => $this->report->severity,
         ];
+    }
+
+    public function toFcm(object $notifiable): FcmMessage
+    {
+        $this->report->loadMissing('category', 'region');
+        $region   = $this->report->region?->name ?? '';
+        $category = optional($this->report->category)->name ?? '';
+
+        return FcmMessage::create()
+            ->notification(
+                FcmNotification::create()
+                    ->title(__('api.fcm_disease_alert_title', ['title' => $this->report->title]))
+                    ->body(__('api.fcm_disease_alert_body', [
+                        'region'   => $region,
+                        'severity' => $this->report->severity,
+                        'category' => $category,
+                    ]))
+            )
+            ->data([
+                'type'      => 'disease_alert',
+                'report_id' => (string) $this->report->id,
+            ]);
     }
 }
