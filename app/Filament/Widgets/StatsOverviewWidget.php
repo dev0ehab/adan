@@ -16,7 +16,7 @@ class StatsOverviewWidget extends BaseWidget
     protected function getStats(): array
     {
         return [
-            Stat::make(__('filament.stats.asdasda'), User::where('role', 'customer')->count())
+            Stat::make(__('filament.stats.total_breeders'), User::where('role', 'customer')->count())
                 ->description(__('filament.stats.total_breeders_desc'))
                 ->descriptionIcon('heroicon-m-users')
                 ->color('success'),
