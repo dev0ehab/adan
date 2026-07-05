@@ -62,7 +62,6 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 StatsOverviewWidget::class,
                 LatestReportsWidget::class,
-                RegionalAlertMapWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
